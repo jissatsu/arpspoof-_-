@@ -1,6 +1,6 @@
 #include "arpspoof.hpp"
 
-void cnvrt_ip2b( char *ip, uint8_t *dst )
+void killua::cnvrt_ip2b( char *ip, uint8_t *dst )
 {
     register int i, j;
     char frag[4];
@@ -22,7 +22,7 @@ void cnvrt_ip2b( char *ip, uint8_t *dst )
     memcpy( dst, dst_ip, 4 );
 }
 
-void arpsf_packet( libnet_t *ltag, struct arpsf_ctx *ctx )
+void killua::arpsf_packet( libnet_t *ltag, struct arpsf_ctx *ctx )
 {
     libnet_ptag_t ether, arp;
     uint8_t hw_unkn[6] = { 
@@ -50,7 +50,7 @@ void arpsf_packet( libnet_t *ltag, struct arpsf_ctx *ctx )
         __die( ltag, "Error building ethernet header!" );
 }
 
-void arpspoof_initiate( libnet_t *ltag, struct arpsf_ctx *ctx )
+void killua::arpspoof_initiate( libnet_t *ltag, struct arpsf_ctx *ctx )
 {
     int lpstat;
     
@@ -67,7 +67,7 @@ void arpspoof_initiate( libnet_t *ltag, struct arpsf_ctx *ctx )
     }
 }
 
-void arpspoof( struct arpsf_ctx *ctx, char *iface )
+void killua::arpspoof( struct arpsf_ctx *ctx, char *iface )
 {
     int lpstat;
     libnet_t *ltag;
@@ -86,7 +86,7 @@ void arpspoof( struct arpsf_ctx *ctx, char *iface )
     arpspoof_initiate( ltag, ctx );
 }
 
-void __die( libnet_t *ltag, const char *msg )
+void killua::__die( libnet_t *ltag, const char *msg )
 {
     std::cerr << msg << std::endl;
     if ( ltag )
