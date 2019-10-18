@@ -2,10 +2,8 @@
 #define __ARPSPOOF_H 1
 
 #include <iostream>
-#include <stdio.h>
 #include <stdint.h>
 #include <netinet/ether.h>
-#include <sys/socket.h>
 #include <libnet.h>
 #include <getopt.h>
 
