@@ -1,5 +1,6 @@
 #include "arpspoof.hpp"
 
+
 void killua::cnvrt_ip2b( char *ip, uint8_t *dst )
 {
     register int i, j;
@@ -22,68 +23,68 @@ void killua::cnvrt_ip2b( char *ip, uint8_t *dst )
     memcpy( dst, dst_ip, 4 );
 }
 
-void killua::arpsf_packet( libnet_t *ltag, struct arpsf_ctx *ctx )
+
+void killua::arp_packet( libnet_t *ltag, struct arp_ctx *ctx )
 {
     libnet_ptag_t ether, arp;
-    uint8_t hw_unkn[6] = { 
-        0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00 
-    };
-    
+
     arp = libnet_autobuild_arp(
-        ARPOP_REPLY,
+        ctx->opcode,
         ctx->src_hw,
-        ctx->host,
-        hw_unkn,
-        ctx->target,
+        ctx->src_ip,
+        ctx->dst_hw,
+        ctx->dst_ip,
         ltag
     );
     if ( arp < 0 )
-        __die( ltag, "Error building arp packet!" );
-
-    ether = libnet_autobuild_ethernet( 
-        hw_unkn, 
-        ETHERTYPE_ARP, 
+        killua::__die( ltag, "Arp header error!" );
+    
+    ether = libnet_autobuild_ethernet(
+        ctx->dst_hw,
+        ETHERTYPE_ARP,
         ltag
     );
     if ( ether < 0 )
-        __die( ltag, "Error building ethernet header!" );
+        killua::__die( ltag, "Ethernet header error" );
 }
 
-void killua::arpspoof_initiate( libnet_t *ltag, struct arpsf_ctx *ctx )
+void killua::format_arp( libnet_t *ltag, struct arp_ctx *ctx )
+{
+    
+}
+
+int killua::lookup_arp( char *ip )
+{
+    FILE *fp;
+
+    if ( !(fp = fopen( ARP_CACHE, "r" )) )
+        return -1;
+        
+    return 0;
+}
+
+
+int killua::inject_arp( libnet_t *ltag )
 {
     int lpstat;
-    
-    for ( ;; ) {
-        arpsf_packet( ltag , ctx);
-        lpstat = libnet_write( ltag );
-        if( lpstat < 0 )
-        {
-            strcpy( arpsf_errbuf, libnet_geterror( ltag ) );
-            __die( ltag , arpsf_errbuf );
-        }
-        sleep( 1 );
+    if ( !(lpstat = libnet_write( ltag )) ){
         libnet_clear_packet( ltag );
+        return -1;
     }
+    return 0;
 }
 
-void killua::arpspoof( struct arpsf_ctx *ctx, char *iface )
+void killua::arpspoof( char *iface, char *target, char *host )
 {
-    int lpstat;
     libnet_t *ltag;
-    struct libnet_ether_addr *hw;
-
-    if ( !(ltag = libnet_init( 
-            LIBNET_LINK, iface, arpsf_errbuf )) 
-    ) {
-        __die( NULL, arpsf_errbuf );
-    }
+    struct libnet_ether_addr *hw_addr;
+    struct arp_ctx *ctx;
     
-    if ( !(hw = libnet_get_hwaddr( ltag )) ) {
-        __die( ltag, libnet_geterror( ltag ) );
-    }
-    memcpy( ctx->src_hw, hw->ether_addr_octet, 6 );
-    arpspoof_initiate( ltag, ctx );
+    if ( !(ltag = libnet_init(LIBNET_LINK, iface, arpsf_errbuf)) )
+        killua::__die( NULL, arpsf_errbuf );
+    
+    if ( !(hw_addr = libnet_get_hwaddr( ltag )) )
+        killua::__die( ltag, libnet_geterror( ltag ) );
 }
 
 void killua::__die( libnet_t *ltag, const char *msg )

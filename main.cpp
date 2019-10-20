@@ -12,36 +12,30 @@ void _usage( char *prog )
 
 int main( int argc, char **argv )
 {
-    struct arpsf_ctx ctx;
     char *host;
     char *target;
-    char *target_hw;
     char *iface;
     int opt;
 
-    host      = NULL;
-    target    = NULL;
-    target_hw = NULL;
-    iface     = NULL;
+    host   = NULL;
+    target = NULL;
+    iface  = NULL;
 
     while ( (opt = getopt( argc, argv, "t:h:i:m:" )) != -1 )
     {
         switch ( opt ) {
             case 'i': iface     = optarg; break; 
             case 't': target    = optarg; break;
-            case 'm': target_hw = optarg; break;
             case 'h': host      = optarg; break;
             default:
                 _usage( argv[0] );
         }
     }
 
-    if ( !host || !target || !target_hw ) {
+    if ( !host || !target ) {
         _usage( argv[0] );
     }
 
-    killua::cnvrt_ip2b( target, (&ctx)->target );
-    killua::cnvrt_ip2b( host, (&ctx)->host );
-    killua::arpspoof( &ctx, iface );
+    killua::arpspoof( iface, target, host );
     return 0;
 }
