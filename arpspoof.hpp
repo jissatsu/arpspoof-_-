@@ -28,7 +28,7 @@ namespace killua
 {
     libnet_t       * __init__( char *iface );
     uint8_t        * lookup_arp( char *ip );
-    struct arp_ctx * format_arp( libnet_t *ltag, uint16_t opcode, uint16_t *src_hw, char *target, char *host );
+    struct arp_ctx * format_arp( libnet_t *ltag, uint16_t opcode, uint8_t *src_hw, uint8_t *src_ip, uint8_t *dst_hw, uint8_t *dst_ip );
 
     void  arp_packet( libnet_t *ltag, struct arp_ctx *ctx );
     void  cnvrt_ip2b( char *ip, uint8_t *dst );

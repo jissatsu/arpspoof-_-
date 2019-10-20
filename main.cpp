@@ -24,9 +24,9 @@ int main( int argc, char **argv )
     while ( (opt = getopt( argc, argv, "t:h:i:m:" )) != -1 )
     {
         switch ( opt ) {
-            case 'i': iface     = optarg; break; 
-            case 't': target    = optarg; break;
-            case 'h': host      = optarg; break;
+            case 'i': iface  = optarg; break; 
+            case 't': target = optarg; break;
+            case 'h': host   = optarg; break;
             default:
                 _usage( argv[0] );
         }

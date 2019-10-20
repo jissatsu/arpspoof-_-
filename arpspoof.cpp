@@ -63,18 +63,20 @@ void killua::arp_packet( libnet_t *ltag, struct arp_ctx *ctx )
 }
 
 struct arp_ctx * killua::format_arp( libnet_t *ltag, uint16_t opcode,
-                                     uint16_t *src_hw,
-                                     char *target, char *host )
+                                     uint8_t *src_hw,
+                                     uint8_t *src_ip,
+                                     uint8_t *dst_hw,
+                                     uint8_t *dst_ip )
 {
     static struct arp_ctx ctx;
-    if ( opcode == ARPOP_REQUEST || opcode == ARPOP_REPLY ){
-        ctx.opcode = opcode;
-    }
-
-    memcpy( ctx.src_hw, src_hw, 6 );
-    if ( opcode == ARPOP_REQUEST ) {
-        
-    }
+    if ( opcode != ARPOP_REQUEST && opcode != ARPOP_REPLY )
+        return NULL;
+    
+    ctx.opcode = opcode;
+    memcpy( ctx.dst_hw, dst_hw, 6);
+    memcpy( ctx.dst_ip, dst_ip, 4);
+    memcpy( ctx.src_hw, src_hw, 6);
+    memcpy( ctx.src_ip, src_ip, 4);
     return &ctx;
 }
 
@@ -119,7 +121,6 @@ int killua::inject_arp( libnet_t *ltag )
 void killua::arpspoof( char *iface, char *target, char *host )
 {
     libnet_t *ltag;
-    uint8_t *lookup_hw;
     struct libnet_ether_addr *hw_addr;
     struct arp_ctx *ctx;
     
@@ -130,19 +131,6 @@ void killua::arpspoof( char *iface, char *target, char *host )
     if ( !(hw_addr = libnet_get_hwaddr( ltag )) ){
         killua::__die( ltag, libnet_geterror( ltag ) );
     }
-    
-    lookup_hw = killua::lookup_arp( host );
-    if ( !lookup_hw ) {
-        //ctx = killua::format_arp( 
-        //    ltag, ARPOP_REQUEST 
-        //);
-    } else {
-        //ctx = killua::format_arp( 
-        //    ltag, ARPOP_REPLY
-        //);
-    }
-    // memcpy( ctx->src_hw, hw_addr->ether_addr_octet, 6 );
-    // arpspoof_initiate( ltag, ctx );
 }
 
 
