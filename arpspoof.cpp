@@ -82,23 +82,29 @@ struct arp_ctx * killua::format_arp( libnet_t *ltag, uint16_t opcode,
 }
 
 
-int killua::lookup_arp( char *ip )
+char * killua::lookup_arp( char *ip )
 {
     FILE *fp;
-    unsigned char *hw;
     char line[0xFF];
-    char cachel[0xFF];
+    char addr[20];
+    char hwtype[5];
+    char flags[5];
+    static char hwaddr[25];
+    char mask[5];
+    char dev[25];
 
     if ( !(fp = fopen( ARP_CACHE, "r" )) ){
-        return -1;
+        return NULL;
     }
     while ( fgets( line, 0xFF, fp ) ){
         if ( strstr( line, ip ) ) {
-            
+            sscanf( line, "%s %s %s %s %s %s", addr, hwtype, flags, hwaddr, mask, dev );
+            break;
         }
     }
-    return -1;
+    return (strlen( hwaddr ) > 0) ? hwaddr : NULL ;
 }
+
 
 int killua::inject_arp( libnet_t *ltag )
 {
