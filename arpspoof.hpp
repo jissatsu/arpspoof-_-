@@ -26,12 +26,14 @@ struct arp_ctx
 
 namespace killua
 {
-    libnet_t * __init__( char *iface );
+    libnet_t       * __init__( char *iface );
+    struct arp_ctx * format_arp( libnet_t *ltag, uint16_t opcode, uint16_t *src_hw, char *target, char *host );
+
     void  arp_packet( libnet_t *ltag, struct arp_ctx *ctx );
     void  cnvrt_ip2b( char *ip, uint8_t *dst );
+    void  cnvrt_hw2b( char *hw, uint8_t *dst );
     void  __die( libnet_t *ltag, const char *msg );
     void  arpspoof( char *iface, char *target, char *host );
-    void  format_arp( libnet_t *ltag, struct arp_ctx *ctx );
     int   lookup_arp( char *ip );
     int   inject_arp( libnet_t *ltag );
 }
