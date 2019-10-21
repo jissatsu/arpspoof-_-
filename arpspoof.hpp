@@ -25,19 +25,19 @@ struct arp_ctx
 // arpspoof context
 struct arpspf_ctx
 {
-    char *iface;        // interface
-    uint8_t target[4];  // arpspoof target
-    uint8_t host[4];    // arpspoof host
+    char *iface;   // interface
+    char *target;  // arpspoof target
+    char *host;    // arpspoof host
 };
 
 namespace killua
 {
     libnet_t       * __init__( char *iface );
-    uint8_t        * lookup_arp( char *ip );
     struct arp_ctx * format_arp( libnet_t *ltag, uint16_t opcode, uint8_t *src_hw, uint8_t *src_ip, uint8_t *dst_hw, uint8_t *dst_ip );
 
     void   arp_packet( libnet_t *ltag, struct arp_ctx *ctx );
     void   __die( libnet_t *ltag, const char *msg );
+    short  lookup_arp( char *ip, uint8_t *hw );
     short  arpspoof( struct arpspf_ctx *conf, char *errbuf );
     int    inject_arp( libnet_t *ltag );
 }

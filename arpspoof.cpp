@@ -43,7 +43,7 @@ struct arp_ctx * killua::format_arp( libnet_t *ltag, uint16_t opcode,
     return &ctx;
 }
 
-uint8_t * killua::lookup_arp( char *ip )
+short killua::lookup_arp( char *ip, uint8_t *hw )
 {
     FILE *fp;
     char line[0xFF];
@@ -53,22 +53,22 @@ uint8_t * killua::lookup_arp( char *ip )
     char hwaddr[25];
     char mask[5];
     char dev[25];
-    static uint8_t hw[6];
 
     if ( !(fp = fopen( ARP_CACHE, "r" )) ){
-        return NULL;
+        return -1;
     }
     while ( fgets( line, 0xFF, fp ) ){
-        if ( strstr( line, ip ) ) {
-            sscanf( line, "%s %s %s %s %s %s", addr, hwtype, flags, hwaddr, mask, dev );
+        sscanf( line, "%s %s %s %s %s %s", addr, hwtype, flags, hwaddr, mask, dev );
+        if ( strcmp( addr, ip ) == 0 ) {
             break;
         }
     }
+    fseek( fp, 0, SEEK_SET );
     if ( strlen( hwaddr ) > 0 ) {
         cnvrt_hw2b( hwaddr, hw );
-        return hw;
+        return 0;
     }
-    return NULL;
+    return -1;
 }
 
 int killua::inject_arp( libnet_t *ltag )
@@ -86,6 +86,8 @@ short killua::arpspoof( struct arpspf_ctx *conf, char *errbuf )
     libnet_t *ltag;
     struct libnet_ether_addr *hw;
     struct arp_ctx *ctx;
+    uint8_t lkup_host[6];
+    uint8_t lkup_target[6];
 
     if ( !(ltag = libnet_init(LIBNET_LINK, conf->iface, errbuf)) ) {
         return -1;
@@ -97,6 +99,17 @@ short killua::arpspoof( struct arpspf_ctx *conf, char *errbuf )
     }
 
     // dev_addr( conf->iface, ipaddr, errbuf );
+    if( killua::lookup_arp( conf->host, lkup_host ) < 0 ){
+        fprintf( stdout, "No host" );
+    } else {
+        fprintf( stdout, "%02x:%02x:%02x:%02x:%02x:%02x\n", lkup_host[0], lkup_host[1], lkup_host[2], lkup_host[3], lkup_host[4], lkup_host[5] );
+    }
+
+    if( killua::lookup_arp( conf->target, lkup_target ) < 0 ){
+        fprintf( stdout, "No target" );
+    } else {
+        fprintf( stdout, "%02x:%02x:%02x:%02x:%02x:%02x\n", lkup_target[0], lkup_target[1], lkup_target[2], lkup_target[3], lkup_target[4], lkup_target[5] );
+    }
     return 0;
 }
 
