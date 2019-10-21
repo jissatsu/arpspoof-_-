@@ -16,6 +16,8 @@ int main( int argc, char **argv )
     char *target;
     char *iface;
     int opt;
+    struct arpspf_ctx arpsf;
+    char errbuf[0xFF];
 
     host   = NULL;
     target = NULL;
@@ -36,6 +38,13 @@ int main( int argc, char **argv )
         _usage( argv[0] );
     }
 
-    killua::arpspoof( iface, target, host );
+    arpsf.iface = iface;
+    killua::cnvrt_ip2b( host, arpsf.host );
+    killua::cnvrt_ip2b( target, arpsf.target );
+
+    if( killua::arpspoof( &arpsf, errbuf ) < 0 )
+    {
+        std::cerr << errbuf << std::endl;
+    }
     return 0;
 }

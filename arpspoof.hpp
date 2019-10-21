@@ -12,9 +12,6 @@
     #define ARP_CACHE "/proc/net/arp"
 #endif
 
-// arpspoof error buffer
-static char arpsf_errbuf[0xFF];
-
 struct arp_ctx
 {
     short opcode;
@@ -24,18 +21,26 @@ struct arp_ctx
     uint8_t dst_ip[4];  // target ip addr
 };
 
+// arpspoof context
+struct arpspf_ctx
+{
+    char *iface;        // interface
+    uint8_t target[4];  // arpspoof target
+    uint8_t host[4];    // arpspoof host
+};
+
 namespace killua
 {
     libnet_t       * __init__( char *iface );
     uint8_t        * lookup_arp( char *ip );
     struct arp_ctx * format_arp( libnet_t *ltag, uint16_t opcode, uint8_t *src_hw, uint8_t *src_ip, uint8_t *dst_hw, uint8_t *dst_ip );
 
-    void  arp_packet( libnet_t *ltag, struct arp_ctx *ctx );
-    void  cnvrt_ip2b( char *ip, uint8_t *dst );
-    void  cnvrt_hw2b( char *hw, uint8_t *dst );
-    void  __die( libnet_t *ltag, const char *msg );
-    void  arpspoof( char *iface, char *target, char *host );
-    int   inject_arp( libnet_t *ltag );
+    void   arp_packet( libnet_t *ltag, struct arp_ctx *ctx );
+    void   cnvrt_ip2b( char *ip, uint8_t *dst );
+    void   cnvrt_hw2b( char *hw, uint8_t *dst );
+    void   __die( libnet_t *ltag, const char *msg );
+    short  arpspoof( struct arpspf_ctx *conf, char *errbuf );
+    int    inject_arp( libnet_t *ltag );
 }
 
 #endif

@@ -118,21 +118,23 @@ int killua::inject_arp( libnet_t *ltag )
     return 0;
 }
 
-void killua::arpspoof( char *iface, char *target, char *host )
+short killua::arpspoof( struct arpspf_ctx *conf, char *errbuf )
 {
     libnet_t *ltag;
-    struct libnet_ether_addr *hw_addr;
+    struct libnet_ether_addr *hw;
     struct arp_ctx *ctx;
+
+    if ( !(ltag = libnet_init(LIBNET_LINK, conf->iface, errbuf)) ) {
+        return -1;
+    }
+
+    if ( !(hw = libnet_get_hwaddr( ltag )) ) {
+        sprintf( errbuf, "%s\n", libnet_geterror( ltag ) );
+        return -1;
+    }
     
-    if ( !(ltag = libnet_init(LIBNET_LINK, iface, arpsf_errbuf)) ){
-        killua::__die( NULL, arpsf_errbuf );
-    }
-
-    if ( !(hw_addr = libnet_get_hwaddr( ltag )) ){
-        killua::__die( ltag, libnet_geterror( ltag ) );
-    }
+    return 0;
 }
-
 
 void killua::__die( libnet_t *ltag, const char *msg )
 {
