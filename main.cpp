@@ -39,8 +39,8 @@ int main( int argc, char **argv )
     }
 
     arpsf.iface = iface;
-    killua::cnvrt_ip2b( host, arpsf.host );
-    killua::cnvrt_ip2b( target, arpsf.target );
+    cnvrt_ip2b( host, arpsf.host );
+    cnvrt_ip2b( target, arpsf.target );
 
     if( killua::arpspoof( &arpsf, errbuf ) < 0 )
     {

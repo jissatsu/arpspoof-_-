@@ -7,6 +7,7 @@
 #include <netinet/ether.h>
 #include <libnet.h>
 #include <getopt.h>
+#include "addr.h"
 
 #ifndef ARP_CACHE 
     #define ARP_CACHE "/proc/net/arp"
@@ -36,8 +37,6 @@ namespace killua
     struct arp_ctx * format_arp( libnet_t *ltag, uint16_t opcode, uint8_t *src_hw, uint8_t *src_ip, uint8_t *dst_hw, uint8_t *dst_ip );
 
     void   arp_packet( libnet_t *ltag, struct arp_ctx *ctx );
-    void   cnvrt_ip2b( char *ip, uint8_t *dst );
-    void   cnvrt_hw2b( char *hw, uint8_t *dst );
     void   __die( libnet_t *ltag, const char *msg );
     short  arpspoof( struct arpspf_ctx *conf, char *errbuf );
     int    inject_arp( libnet_t *ltag );

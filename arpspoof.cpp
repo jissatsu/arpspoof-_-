@@ -1,43 +1,6 @@
 #include "arpspoof.hpp"
 
 
-void killua::cnvrt_ip2b( char *ip, uint8_t *dst )
-{
-    register int i, j;
-    char frag[4];
-    uint8_t dst_ip[4];
-
-    i = 0;
-    j = 0;
-    
-    while ( *ip != '\0' )
-    {
-        if ( *ip == '.' ) {
-            frag[i] = '\0', dst_ip[j++] = atoi( frag ), i = 0, ip++;
-        }
-        frag[i++] = *ip++;
-    }
-    
-    frag[i] = '\0';
-    dst_ip[j] = atoi( frag );
-    memcpy( dst, dst_ip, 4 );
-}
-
-void killua::cnvrt_hw2b( char *hw, uint8_t *dst )
-{
-    unsigned int _zhw[6];
-    unsigned char _hw[6];
-    sscanf( 
-        hw, "%x:%x:%x:%x:%x:%x", 
-        &_zhw[0], &_zhw[1], &_zhw[2], &_zhw[3], &_zhw[4], &_zhw[5]
-    );
-
-    for ( register int i = 0 ; i < 6 ; i++ ) {
-        _hw[i] = (unsigned char) _zhw[i];
-    }
-    memcpy( dst, _hw, 6 );
-}
-
 void killua::arp_packet( libnet_t *ltag, struct arp_ctx *ctx )
 {
     libnet_ptag_t ether, arp;
@@ -102,7 +65,7 @@ uint8_t * killua::lookup_arp( char *ip )
         }
     }
     if ( strlen( hwaddr ) > 0 ) {
-        killua::cnvrt_hw2b( hwaddr, hw );
+        cnvrt_hw2b( hwaddr, hw );
         return hw;
     }
     return NULL;
@@ -132,7 +95,8 @@ short killua::arpspoof( struct arpspf_ctx *conf, char *errbuf )
         sprintf( errbuf, "%s\n", libnet_geterror( ltag ) );
         return -1;
     }
-    
+
+    // dev_addr( conf->iface, ipaddr, errbuf );
     return 0;
 }
 
