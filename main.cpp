@@ -34,7 +34,7 @@ int main( int argc, char **argv )
         }
     }
 
-    if ( !host || !target ) {
+    if ( !iface || !host || !target ) {
         _usage( argv[0] );
     }
 

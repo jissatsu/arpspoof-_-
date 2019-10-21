@@ -86,8 +86,11 @@ short killua::arpspoof( struct arpspf_ctx *conf, char *errbuf )
     libnet_t *ltag;
     struct libnet_ether_addr *hw;
     struct arp_ctx *ctx;
-    uint8_t lkup_host[6];
-    uint8_t lkup_target[6];
+    uint8_t host_hw[6];
+    uint8_t target_hw[6];
+    uint8_t host_ip[4];
+    uint8_t target_ip[4];
+    uint8_t src_ip[4];
 
     if ( !(ltag = libnet_init(LIBNET_LINK, conf->iface, errbuf)) ) {
         return -1;
@@ -97,14 +100,45 @@ short killua::arpspoof( struct arpspf_ctx *conf, char *errbuf )
         sprintf( errbuf, "%s\n", libnet_geterror( ltag ) );
         return -1;
     }
-
-    // dev_addr( conf->iface, ipaddr, errbuf );
-    if( killua::lookup_arp( conf->host, lkup_host ) < 0 ){
-        fprintf( stdout, "No host" );
+    
+    if( dev_addr( conf->iface, src_ip, errbuf ) < 0 ){
+        sprintf( errbuf, "%s\n", libnet_geterror( ltag ) );
+        return -1;
     }
 
-    if( killua::lookup_arp( conf->target, lkup_target ) < 0 ){
-        fprintf( stdout, "No target" );
+    cnvrt_ip2b( conf->host, host_ip );
+    cnvrt_ip2b( conf->target, target_ip );
+
+    // check if the host is in the arp cache
+    if( killua::lookup_arp( conf->host, host_hw ) < 0 ){
+        // set the arp data
+        ctx = killua::format_arp(
+            ltag,
+            ARPOP_REQUEST,
+            hw->ether_addr_octet,
+            src_ip,
+            (uint8_t *) "\xff\xff\xff\xff\xff\xff",
+            host_ip
+        );
+        
+        killua::arp_packet( ltag, ctx );
+        killua::inject_arp( ltag );
+    }
+
+    // check if the target is in the arp cache
+    if( killua::lookup_arp( conf->target, target_hw ) < 0 ){
+        // set the arp data
+        ctx = killua::format_arp(
+            ltag,
+            ARPOP_REQUEST,
+            hw->ether_addr_octet,
+            src_ip,
+            (uint8_t *) "\xff\xff\xff\xff\xff\xff",
+            target_ip
+        );
+
+        killua::arp_packet( ltag, ctx );
+        killua::inject_arp( ltag );
     }
     return 0;
 }
