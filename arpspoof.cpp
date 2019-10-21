@@ -121,7 +121,11 @@ short killua::arpspoof( struct arpspf_ctx *conf, char *errbuf )
         );
         
         killua::arp_packet( ltag, ctx );
-        killua::inject_arp( ltag );
+        if ( killua::inject_arp( ltag ) < 0 )
+        {
+            sprintf( errbuf, "Error injecting packet!\n" );
+            return -1;
+        }
     }
 
     // check if the target is in the arp cache
@@ -137,7 +141,11 @@ short killua::arpspoof( struct arpspf_ctx *conf, char *errbuf )
         );
 
         killua::arp_packet( ltag, ctx );
-        killua::inject_arp( ltag );
+        if ( killua::inject_arp( ltag ) < 0 )
+        {
+            sprintf( errbuf, "Error injecting packet!\n" );
+            return -1;
+        }
     }
     return 0;
 }
