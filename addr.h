@@ -17,6 +17,7 @@ extern "C" {
 
 void cnvrt_ip2b( char *ip, uint8_t *dst );
 void cnvrt_hw2b( char *hw, uint8_t *dst );
+short is_hw_format( char *hw );
 short dev_addr( char *iface, uint8_t *dst, char *errbuf );
 
 #ifdef __cplusplus

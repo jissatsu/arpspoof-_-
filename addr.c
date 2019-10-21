@@ -37,6 +37,19 @@ void cnvrt_hw2b( char *hw, uint8_t *dst )
     memcpy( dst, _hw, 6 );
 }
 
+short is_hw_format( char *hw )
+{
+    int scan;
+    unsigned int _zhw[6];
+
+    sscanf( 
+        hw, "%x:%x:%x:%x:%x:%x", 
+        &_zhw[0], &_zhw[1], &_zhw[2], &_zhw[3], &_zhw[4], &_zhw[5]
+    );
+
+    return ( scan != EOF ) ? 0 : -1 ;
+}
+
 short dev_addr( char *iface, uint8_t *dst, char *errbuf )
 {
     int sockfd;

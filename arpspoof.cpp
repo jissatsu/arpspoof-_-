@@ -64,7 +64,7 @@ short killua::lookup_arp( char *ip, uint8_t *hw )
         }
     }
     fseek( fp, 0, SEEK_SET );
-    if ( strlen( hwaddr ) > 0 ) {
+    if ( strlen( hwaddr ) > 0 && is_hw_format( hwaddr ) == 0 ) {
         cnvrt_hw2b( hwaddr, hw );
         return 0;
     }
@@ -101,14 +101,10 @@ short killua::arpspoof( struct arpspf_ctx *conf, char *errbuf )
     // dev_addr( conf->iface, ipaddr, errbuf );
     if( killua::lookup_arp( conf->host, lkup_host ) < 0 ){
         fprintf( stdout, "No host" );
-    } else {
-        fprintf( stdout, "%02x:%02x:%02x:%02x:%02x:%02x\n", lkup_host[0], lkup_host[1], lkup_host[2], lkup_host[3], lkup_host[4], lkup_host[5] );
     }
 
     if( killua::lookup_arp( conf->target, lkup_target ) < 0 ){
         fprintf( stdout, "No target" );
-    } else {
-        fprintf( stdout, "%02x:%02x:%02x:%02x:%02x:%02x\n", lkup_target[0], lkup_target[1], lkup_target[2], lkup_target[3], lkup_target[4], lkup_target[5] );
     }
     return 0;
 }
