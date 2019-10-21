@@ -102,7 +102,6 @@ short killua::arpspoof( struct arpspf_ctx *conf, char *errbuf )
     }
     
     if( dev_addr( conf->iface, src_ip, errbuf ) < 0 ){
-        sprintf( errbuf, "%s\n", libnet_geterror( ltag ) );
         return -1;
     }
 
