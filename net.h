@@ -15,8 +15,20 @@
 extern "C" {
 #endif
 
+struct net
+{
+    char *iface;        // network interface
+    uint32_t nhosts;    // network range
+    uint32_t nmask;     // netmask
+    uint32_t start_ip;  // start ip address
+};
+
+uint32_t ip2long( char *ip );
+uint32_t nhosts( char *netmask );
+
 void cnvrt_ip2b( char *ip, uint8_t *dst );
 void cnvrt_hw2b( char *hw, uint8_t *dst );
+short arp_refresh( void );
 short is_hw_format( char *hw );
 short dev_addr( char *iface, uint8_t *dst, char *errbuf );
 
