@@ -22,15 +22,6 @@ struct endpoint
     char *host_hw;
 };
 
-struct arp_ctx
-{
-    uint16_t opcode;    // arp opcode
-    uint8_t src_hw[6];  // source hardware addr
-    uint8_t src_ip[4];  // source ip addr
-    uint8_t dst_hw[6];  // target hardware addr
-    uint8_t dst_ip[4];  // target ip addr
-};
-
 void  arp_inject( libnet_t *ltag, uint16_t opcode, uint8_t *src_hw, uint8_t *src_ip, uint8_t *dst_hw, uint8_t *dst_ip );
 short lookup_arp( struct endpoint *endps );
 
