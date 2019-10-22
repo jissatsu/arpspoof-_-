@@ -13,7 +13,7 @@
 #endif
 
 // number of live hosts on the network
-uint32_t live_hosts;
+uint16_t live_hosts;
 
 struct endpoint
 {
@@ -31,6 +31,7 @@ struct arp_ctx
     uint8_t dst_ip[4];  // target ip addr
 };
 
-short lookup_arp( struct endpoint *_ent );
+void  arp_inject( libnet_t *ltag, uint16_t opcode, uint8_t *src_hw, uint8_t *src_ip, uint8_t *dst_hw, uint8_t *dst_ip );
+short lookup_arp( struct endpoint *endps );
 
 #endif

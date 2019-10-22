@@ -12,6 +12,7 @@
 #include <errno.h>
 #include "error.h"
 
+// address types
 typedef enum { IPV4, MASK } addr_num_t;
 
 struct net

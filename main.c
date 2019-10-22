@@ -17,6 +17,7 @@ int main( int argc, char **argv )
     char *iface;
     int opt;
     struct net _net;
+    struct spoof_endpoints _spf;
 
     host   = NULL;
     target = NULL;
@@ -38,6 +39,7 @@ int main( int argc, char **argv )
     }
 
     init_net( iface, &_net );
-    fprintf( stdout, "%d\n", _net.subnet );
+    _spf.target = target;
+    _spf.host   = host;
     return 0;
 }

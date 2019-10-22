@@ -3,6 +3,12 @@
 
 #include "arp.h"
 
+struct spoof_endpoints
+{
+    char *target;
+    char *host;
+};
+
 void arpspoof( char *iface, char *target, char *host );
 
 #endif

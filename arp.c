@@ -1,33 +1,39 @@
 #include "arp.h"
 
-short arp_packet( libnet_t *ltag, struct arp_ctx *ctx, 
-                         char *errbuf )
+void arp_inject( libnet_t *ltag, uint16_t opcode, 
+                  uint8_t *src_hw, uint8_t *src_ip,
+                  uint8_t *dst_hw, uint8_t *dst_ip ) 
 {
     libnet_ptag_t ether, arp;
 
     arp = libnet_autobuild_arp(
-        ctx->opcode,
-        ctx->src_hw,
-        ctx->src_ip,
-        ctx->dst_hw,
-        ctx->dst_ip,
+        opcode,
+        src_hw,
+        src_ip,
+        dst_hw,
+        dst_ip,
         ltag
     );
-    if ( arp < 0 )
-        sprintf( errbuf, "%s", "Arp header error!" );
-        return -1;
-    
+    if ( arp < 0 ){
+        __die( "Arp header error!" );
+    }
+
     ether = libnet_autobuild_ethernet(
-        ctx->dst_hw,
+        dst_hw,
         ETHERTYPE_ARP,
         ltag
     );
-    if ( ether < 0 )
-        sprintf( errbuf, "%s", "Ethernet header error!" );
-        return -1;
+    if ( ether < 0 ){
+        __die( "Ethernet header error!" );
+    }    
+
+    if ( libnet_write( ltag ) < 0 ) {
+        __die( libnet_geterror( ltag ) );
+    }
+    libnet_clear_packet( ltag );
 }
 
-short lookup_arp( struct endpoint *_ent )
+short lookup_arp( struct endpoint *endps )
 {
     FILE *fp;
     char line[0xFF];
