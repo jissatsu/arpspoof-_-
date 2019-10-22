@@ -14,6 +14,16 @@ uint32_t ip2long( char *ip )
     return _long;
 }
 
+uint8_t * long2ip( uint32_t _long )
+{
+    static uint8_t ip[4];
+    ip[0] = (_long >> 24) & 0xFF;
+    ip[1] = (_long >> 16) & 0xFF;
+    ip[2] = (_long >>  8) & 0xFF;
+    ip[3] = (_long >>  0) & 0xFF;
+    return ip;
+}
+
 // calculate the host range of the network
 uint32_t calc_hosts( char *ip, char *nmask )
 {

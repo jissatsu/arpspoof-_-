@@ -26,6 +26,7 @@ struct net
 };
 
 short     calc_subnet( char *nmask );
+uint8_t * long2ip( uint32_t _long );
 uint32_t  ip2long( char *ip );
 uint32_t  calc_hosts( char *ip, char *nmask );
 uint32_t  net_off( char *ip, char *nmask  );
