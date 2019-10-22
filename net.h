@@ -10,6 +10,7 @@
 #include <arpa/inet.h>
 #include <net/if.h>
 #include <errno.h>
+#include "error.h"
 
 typedef enum { IPV4, MASK } addr_num_t;
 
@@ -23,7 +24,8 @@ struct net
 };
 
 uint32_t ip2long( char *ip );
-uint32_t calc_hosts( struct net *_net );
+uint32_t calc_hosts( char *ip, char *nmask );
+uint32_t net_off( char *ip, char *nmask  );
 
 void   init_net( char *iface, struct net *_net );
 short  cnvrt_ip2b( char *ip, uint8_t *dst );

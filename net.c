@@ -15,18 +15,43 @@ uint32_t ip2long( char *ip )
 }
 
 // calculate the host range of the network
-uint32_t calc_hosts( struct net *_net )
+uint32_t calc_hosts( char *ip, char *nmask )
 {
+    uint32_t lip, lmask;
     uint32_t nhosts = 0;
+
+    lip    = ip2long( ip );
+    lmask  = ip2long( nmask );
+    nhosts = lmask ^ 0xFFFFFFFF;
     return nhosts;
 }
 
-
-void init_net( char *iface, struct net *_net )
+// calculate network start ip
+uint32_t net_off( char *ip, char *nmask )
 {
-    
+    uint32_t lip, lmask;
+    uint32_t off = 0;
+
+    lip   = ip2long( ip );
+    lmask = ip2long( nmask );
+    off   = lip & lmask;
+    return off;
 }
 
+// initialize the network
+void init_net( char *iface, struct net *_net )
+{
+    if ( dev_addr( iface, _net->ip, IPV4, arpspoof_errbuf ) < 0 ) {
+        __die( arpspoof_errbuf );
+    }
+    if ( dev_addr( iface, _net->nmask, MASK, arpspoof_errbuf ) < 0 ) {
+        __die( arpspoof_errbuf );
+    }
+    
+    _net->iface = iface;
+    _net->hosts_range = calc_hosts( _net->ip, _net->nmask );
+    _net->start_ip    = net_off(    _net->ip, _net->nmask );
+}
 
 short cnvrt_ip2b( char *ip, uint8_t *dst )
 {
@@ -54,7 +79,6 @@ short cnvrt_ip2b( char *ip, uint8_t *dst )
     memcpy( dst, dst_ip, 4 );
     return 0;
 }
-
 
 short cnvrt_hw2b( char *hw, uint8_t *dst )
 {

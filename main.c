@@ -17,7 +17,6 @@ int main( int argc, char **argv )
     char *iface;
     int opt;
     struct net _net;
-    uint8_t ipp[4];
 
     host   = NULL;
     target = NULL;
