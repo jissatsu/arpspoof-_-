@@ -12,7 +12,10 @@
     #define ARP_CACHE "/proc/net/arp"
 #endif
 
-struct host
+// number of live hosts on the network
+uint32_t live_hosts;
+
+struct endpoint
 {
     unsigned int is_gateway : 1;
     char *host_ip;
@@ -21,12 +24,13 @@ struct host
 
 struct arp_ctx
 {
+    uint16_t opcode;    // arp opcode
     uint8_t src_hw[6];  // source hardware addr
     uint8_t src_ip[4];  // source ip addr
     uint8_t dst_hw[6];  // target hardware addr
     uint8_t dst_ip[4];  // target ip addr
 };
 
-short lookup_arp( char *ip, uint8_t *hw );
+short lookup_arp( struct endpoint *_ent );
 
 #endif

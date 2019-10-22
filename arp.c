@@ -6,7 +6,7 @@ short arp_packet( libnet_t *ltag, struct arp_ctx *ctx,
     libnet_ptag_t ether, arp;
 
     arp = libnet_autobuild_arp(
-        ARPOP_REPLY,
+        ctx->opcode,
         ctx->src_hw,
         ctx->src_ip,
         ctx->dst_hw,
@@ -27,7 +27,7 @@ short arp_packet( libnet_t *ltag, struct arp_ctx *ctx,
         return -1;
 }
 
-short lookup_arp( char *ip, uint8_t *hw )
+short lookup_arp( struct endpoint *_ent )
 {
     FILE *fp;
     char line[0xFF];
@@ -43,14 +43,7 @@ short lookup_arp( char *ip, uint8_t *hw )
     }
     while ( fgets( line, 0xFF, fp ) ){
         sscanf( line, "%s %s %s %s %s %s", addr, hwtype, flags, hwaddr, mask, dev );
-        if ( strcmp( addr, ip ) == 0 ) {
-            break;
-        }
     }
     fseek( fp, 0, SEEK_SET );
-    if ( strlen( hwaddr ) > 0 && is_hw_format( hwaddr ) == 0 ) {
-        cnvrt_hw2b( hwaddr, hw );
-        return 0;
-    }
-    return -1;
+    return 0;
 }

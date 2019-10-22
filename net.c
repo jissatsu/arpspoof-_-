@@ -38,6 +38,23 @@ uint32_t net_off( char *ip, char *nmask )
     return off;
 }
 
+// calculate the subnet /16, /17, /24, etc...
+short calc_subnet( char *nmask )
+{
+    short subnet;
+    uint32_t lmask;
+
+    subnet = 0;
+    lmask  = ip2long( nmask );
+    
+    do {
+        if ( lmask & 01 ) {
+            subnet++;
+        }
+    } while( lmask >>= 1 );
+    return subnet;
+}
+
 // initialize the network
 void init_net( char *iface, struct net *_net )
 {
@@ -48,9 +65,10 @@ void init_net( char *iface, struct net *_net )
         __die( arpspoof_errbuf );
     }
     
-    _net->iface = iface;
+    _net->iface       = iface;
     _net->hosts_range = calc_hosts( _net->ip, _net->nmask );
     _net->start_ip    = net_off(    _net->ip, _net->nmask );
+    _net->subnet      = calc_subnet( _net->nmask );
 }
 
 short cnvrt_ip2b( char *ip, uint8_t *dst )

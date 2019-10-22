@@ -19,13 +19,15 @@ struct net
     char *iface;           // network interface
     char nmask[20];        // netmask
     char ip[20];           // ip of device
+    short subnet;          // subnet -. /16; /17; /24 etc...
     uint32_t hosts_range;  // network range
     uint32_t start_ip;     // start ip address i.e 192.168.0.1
 };
 
-uint32_t ip2long( char *ip );
-uint32_t calc_hosts( char *ip, char *nmask );
-uint32_t net_off( char *ip, char *nmask  );
+short     calc_subnet( char *nmask );
+uint32_t  ip2long( char *ip );
+uint32_t  calc_hosts( char *ip, char *nmask );
+uint32_t  net_off( char *ip, char *nmask  );
 
 void   init_net( char *iface, struct net *_net );
 short  cnvrt_ip2b( char *ip, uint8_t *dst );

@@ -38,5 +38,6 @@ int main( int argc, char **argv )
     }
 
     init_net( iface, &_net );
+    fprintf( stdout, "%d\n", _net.subnet );
     return 0;
 }
