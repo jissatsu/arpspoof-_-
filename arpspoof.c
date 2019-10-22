@@ -22,7 +22,7 @@ void arpspoof( struct net *_net, struct spoof_endpoints *_spf )
         fprintf( stdout, "[+] Probing network!\n\n" );
 
         cnvrt_ip2b( _net->ip, src_ip );
-        for ( register int i = 1 ; i < _net->hosts_range ; i++ )
+        for ( int i = 1 ; i < _net->hosts_range ; i++ )
         {
             uint8_t *ip = long2ip( _net->start_ip + i );
             arp_inject(
