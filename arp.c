@@ -18,11 +18,7 @@ void arp_inject( libnet_t *ltag, uint16_t opcode,
         __die( "Arp header error!" );
     }
 
-    ether = libnet_autobuild_ethernet(
-        dst_hw,
-        ETHERTYPE_ARP,
-        ltag
-    );
+    ether = libnet_autobuild_ethernet( dst_hw, ETHERTYPE_ARP, ltag );
     if ( ether < 0 ){
         __die( "Ethernet header error!" );
     }    
@@ -45,16 +41,20 @@ short lookup_arp( char *iface, struct endpoint *endps )
     char dev[25];
 
     if ( !(fp = fopen( ARP_CACHE, "r" )) ){
-        sprintf( arpspoof_errbuf, "Arp lookup failed! %s", strerror( errno ) );
+        sprintf( arpspoof_errbuf, "lookup_arp(): %s", strerror( errno ) );
         return -1;
     }
-    while ( fgets( line, 0xFF, fp ) ){
+
+    live_hosts = 0;
+    while ( fgets( line, 0xFF, fp ) )
+    {
         sscanf( line, "%s %s %s %s %s %s", addr, hwtype, flags, hwaddr, mask, dev );
         if ( strcmp( iface, dev ) != 0 ) {
             continue;
         }
         memcpy( endps->host_ip,     addr,   strlen( addr )   + 1 );
         memcpy( (endps++)->host_hw, hwaddr, strlen( hwaddr ) + 1 );
+        ++live_hosts;
     }
     fseek( fp, 0, SEEK_SET );
     return 0;
