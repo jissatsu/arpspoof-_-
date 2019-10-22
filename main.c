@@ -38,8 +38,9 @@ int main( int argc, char **argv )
         _usage( argv[0] );
     }
 
-    init_net( iface, &_net );
     _spf.target = target;
     _spf.host   = host;
+    init_net( iface, &_net );
+    arpspoof( &_net, &_spf );
     return 0;
 }

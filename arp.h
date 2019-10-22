@@ -17,12 +17,11 @@ uint16_t live_hosts;
 
 struct endpoint
 {
-    unsigned int is_gateway : 1;
-    char *host_ip;
-    char *host_hw;
+    char host_ip[25];
+    char host_hw[25];
 };
 
 void  arp_inject( libnet_t *ltag, uint16_t opcode, uint8_t *src_hw, uint8_t *src_ip, uint8_t *dst_hw, uint8_t *dst_ip );
-short lookup_arp( struct endpoint *endps );
+short lookup_arp( char *iface, struct endpoint *endps );
 
 #endif

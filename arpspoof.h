@@ -9,6 +9,6 @@ struct spoof_endpoints
     char *host;
 };
 
-void arpspoof( char *iface, char *target, char *host );
+void arpspoof( struct net *_net, struct spoof_endpoints *_spf );
 
 #endif
