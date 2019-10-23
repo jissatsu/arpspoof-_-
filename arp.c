@@ -6,6 +6,7 @@ void arp_inject( libnet_t *ltag, uint16_t opcode,
 {
     libnet_ptag_t ether, arp;
 
+    // arp header
     arp = libnet_autobuild_arp(
         opcode,
         src_hw,
@@ -18,14 +19,31 @@ void arp_inject( libnet_t *ltag, uint16_t opcode,
         __die( "Arp header error!" );
     }
 
+    // ethernet header
     ether = libnet_autobuild_ethernet( dst_hw, ETHERTYPE_ARP, ltag );
     if ( ether < 0 ){
         __die( "Ethernet header error!" );
-    }    
+    }
 
     if ( libnet_write( ltag ) < 0 ) {
         __die( libnet_geterror( ltag ) );
     }
+
+    if ( opcode == ARPOP_REQUEST ){
+        printf( 
+            "\r%s[?]%s Who has %d.%d.%d.%d? Tell %d.%d.%d.%d ", 
+            GRN, NLL,
+            dst_ip[0], dst_ip[1], dst_ip[2], dst_ip[3], 
+            src_ip[0], src_ip[1], src_ip[2], src_ip[3]
+        );
+    } else {
+        printf( "%s[+]%s %d.%d.%d.%d is at %02x:%02x:%02x:%02x:%02x:%02x\n", 
+            GRN, NLL,
+            src_ip[0], src_ip[1], src_ip[2], src_ip[3],
+            src_hw[0], src_hw[1], src_hw[2], src_hw[3], src_hw[4], src_hw[5]
+        );
+    }
+    fflush( stdout );
     libnet_clear_packet( ltag );
 }
 

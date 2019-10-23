@@ -17,12 +17,12 @@ void arpspoof( struct net *_net, struct spoof_endpoints *_spf )
     
     if ( !_spf->target )
     {
-        fprintf( stdout, "Target not specified!\n" );
-        fprintf( stdout, "[+] Refreshig arp table!\n" );
-        fprintf( stdout, "[+] Probing network!\n\n" );
+        printf( "\n%s[!]%s Target not specified!\n", RED, NLL );
+        printf( "%s[+]%s Refreshig arp table!\n",    GRN, NLL );
+        printf( "%s[+]%s Probing network!\n\n",      GRN, NLL );
 
         cnvrt_ip2b( _net->ip, src_ip );
-        for ( register int i = 1 ; i < _net->hosts_range ; i++ )
+        for ( int i = 1 ; i < _net->hosts_range ; i++ )
         {
             uint8_t *ip = long2ip( _net->start_ip + i );
             arp_inject(

@@ -7,6 +7,7 @@
 #include <libnet.h>
 #include <getopt.h>
 #include "net.h"
+#include "color.h"
 
 #ifndef ARP_CACHE 
     #define ARP_CACHE "/proc/net/arp"

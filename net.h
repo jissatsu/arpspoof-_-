@@ -18,8 +18,8 @@ typedef enum { IPV4, MASK } addr_num_t;
 struct net
 {
     char *iface;           // network interface
-    char nmask[20];        // netmask
-    char ip[20];           // ip of device
+    char nmask[25];        // netmask
+    char ip[25];           // ip of device
     short subnet;          // subnet -. /16; /17; /24 etc...
     uint32_t hosts_range;  // network range
     uint32_t start_ip;     // start ip address i.e 192.168.0.1
@@ -32,6 +32,7 @@ uint32_t  calc_hosts( char *ip, char *nmask );
 uint32_t  net_off( char *ip, char *nmask  );
 
 void   init_net( char *iface, struct net *_net );
+char * cnvrt_ipb2str( uint8_t *ip );
 short  cnvrt_ip2b( char *ip, uint8_t *dst );
 short  cnvrt_hw2b( char *hw, uint8_t *dst );
 short  is_ipv4_format( char *ip );

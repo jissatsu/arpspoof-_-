@@ -24,7 +24,7 @@ uint8_t * long2ip( uint32_t _long )
     return ip;
 }
 
-// calculate the host range of the network
+// calculate the range of the network
 uint32_t calc_hosts( char *ip, char *nmask )
 {
     uint32_t lip, lmask;
@@ -106,6 +106,13 @@ short cnvrt_ip2b( char *ip, uint8_t *dst )
     dst_ip[j] = atoi( frag );
     memcpy( dst, dst_ip, 4 );
     return 0;
+}
+
+char * cnvrt_ipb2str( uint8_t *ip )
+{
+    char *_ip = (char *) malloc( 25 );
+    sprintf( _ip, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3] );
+    return _ip;
 }
 
 short cnvrt_hw2b( char *hw, uint8_t *dst )
