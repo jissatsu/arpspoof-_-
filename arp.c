@@ -157,7 +157,7 @@ short arp_add_entry( char *iface, uint8_t *ip, uint8_t *hw )
         return -1;
     }
 
-    ipp = cnvrt_ipb2str( ip ); // convert to ip to string
+    ipp = cnvrt_ipb2str( ip ); // ip from 4 byte repr to string repr
 
     memset( &req, 0, sizeof( req ) );
     strcpy( req.arp_dev, iface );

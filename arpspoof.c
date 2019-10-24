@@ -49,14 +49,14 @@ short arp_receiver_start( struct net *_net )
         (void *) _net
     );
 
-    if ( err < 0 ) {
+    if ( err ) {
         sprintf( 
             arpspoof_errbuf, 
             "Error spawning arp_receiver() thread!\n" 
         );
         return -1;
     }
-    printf( "%s[+]%s Arp receiver started successfully!\n", GRN, NLL );
+    printf( "%s[+]%s Arp receiver spawned successfully!\n", GRN, NLL );
     return 0;
 }
 
