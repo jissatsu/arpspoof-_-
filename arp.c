@@ -118,8 +118,8 @@ short lookup_arp( char *iface, struct endpoint *endps )
 }
 
 // add a new entry to the arp table
-// we adding an entry because we are generating the arp requests 
-// we are not forcing the kernel to do that by sending for example UDP data
+// we are adding the entry because we are generating the arp requests
+// we are not forcing the kernel to do that
 short arp_add_entry( char *iface, uint8_t *ip, uint8_t *hw )
 {
     int sock;
