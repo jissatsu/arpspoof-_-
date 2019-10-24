@@ -81,7 +81,30 @@ void arp_refresh( libnet_t *lt, struct net *_net )
 
 void * arp_receiver( void *conf )
 {
+    pcap_t *handle;
+    int snaplen;
+    int timeout;
+    int promisc;
     struct net *_net = (struct net *) conf;
+    
+    snaplen = 64;
+    timeout =  0;
+    promisc =  0;
+
+    handle = pcap_open_live(
+        _net->iface,
+        snaplen,
+        promisc,
+        timeout,
+        arpspoof_errbuf
+    );
+
+    if ( !handle ) {
+        __die( arpspoof_errbuf );
+    }
+
+    // pcap_loop( handle, -1, packet_handler, (u_char *) conf );
+    pcap_close( handle );
     return NULL;
 }
 

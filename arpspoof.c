@@ -70,7 +70,7 @@ void list_targets( struct endpoint *_entps )
 void arpspoof( struct net *_net, struct spoof_endpoints *_spf )
 {
     int refresh_stat;
-    char *target;
+    char target[25];
     struct endpoint _endps[_net->hosts_range];
         
     refresh_stat = 0;
@@ -90,10 +90,15 @@ void arpspoof( struct net *_net, struct spoof_endpoints *_spf )
         }
         printf( "%s[+]%s Listing targets...\n\n", GRN, NLL );
         list_targets( _endps );
+
+        printf( "Choose a target to poison: " );
+        scanf( "%s", target );
     } 
     else {
-        target = _spf->target;
+        strcpy( target, _spf->target );
     }
+
+    printf( "%s\n", target );
 
     // SIGTSTP
     // SIGINT
