@@ -60,9 +60,17 @@ short arp_receiver_start( struct net *_net )
     return 0;
 }
 
+void list_targets( struct endpoint *_entps )
+{
+    for ( register int i = 0 ; i < live_hosts ; i++ ) {
+        printf( "%s[-]%s %s\n", GRN, NLL, (_entps++)->host_ip );
+    }
+}
+
 void arpspoof( struct net *_net, struct spoof_endpoints *_spf )
 {
     int refresh_stat;
+    char *target;
     struct endpoint _endps[_net->hosts_range];
         
     refresh_stat = 0;
@@ -76,13 +84,18 @@ void arpspoof( struct net *_net, struct spoof_endpoints *_spf )
         printf( "%s[!]%s Target not specified!\n", RED, NLL );
         printf( "%s[+]%s Refreshig arp table...\n",  GRN, NLL );
         arp_refresh( lt, _net );
+
+        if ( lookup_arp( _net->iface, _endps ) < 0 ) {
+            __die( arpspoof_errbuf );
+        }
+        printf( "%s[+]%s Listing targets...\n\n", GRN, NLL );
+        list_targets( _endps );
+    } 
+    else {
+        target = _spf->target;
     }
 
     // SIGTSTP
     // SIGINT
     // SIGTERM
-
-    if ( lookup_arp( _net->iface, _endps ) < 0 ) {
-        __die( arpspoof_errbuf );
-    }
 }
