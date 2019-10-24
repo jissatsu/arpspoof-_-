@@ -38,9 +38,15 @@ int main( int argc, char **argv )
         _usage( argv[0] );
     }
 
+    if( __init_arpspoof__( iface, &_net ) < 0 ) {
+        __die( arpspoof_errbuf );
+    }
+
+    printf( "%s[+]%s Arpspoof initialized!\n", GRN, NLL );
+
     _spf.target = target;
     _spf.host   = host;
-    init_net( iface, &_net );
+    
     arpspoof( &_net, &_spf );
-    return 0;
+    exit( 0 );
 }

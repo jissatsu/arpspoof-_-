@@ -1,6 +1,7 @@
 #ifndef __ARPSPOOF_H
 #define __ARPSPOOF_H 1
 
+#include <signal.h>
 #include "arp.h"
 
 struct spoof_endpoints
@@ -9,6 +10,8 @@ struct spoof_endpoints
     char *host;
 };
 
-void arpspoof( struct net *_net, struct spoof_endpoints *_spf );
+short  __init_arpspoof__( char *iface, struct net *_net );
+short  arp_receiver_start( struct net *_net );
+void   arpspoof( struct net *_net, struct spoof_endpoints *_spf );
 
 #endif

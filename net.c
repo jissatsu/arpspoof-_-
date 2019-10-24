@@ -1,6 +1,6 @@
 #include "net.h"
 
-
+// convert an ip address from dotted string to long
 uint32_t ip2long( char *ip )
 {
     uint8_t cnvrt[4];
@@ -14,6 +14,7 @@ uint32_t ip2long( char *ip )
     return _long;
 }
 
+// convert an ip address from long to 4 byte array
 uint8_t * long2ip( uint32_t _long )
 {
     static uint8_t ip[4];
@@ -65,22 +66,7 @@ short calc_subnet( char *nmask )
     return subnet;
 }
 
-// initialize the network
-void init_net( char *iface, struct net *_net )
-{
-    if ( dev_addr( iface, _net->ip, IPV4, arpspoof_errbuf ) < 0 ) {
-        __die( arpspoof_errbuf );
-    }
-    if ( dev_addr( iface, _net->nmask, MASK, arpspoof_errbuf ) < 0 ) {
-        __die( arpspoof_errbuf );
-    }
-    
-    _net->iface       = iface;
-    _net->hosts_range = calc_hosts( _net->ip, _net->nmask );
-    _net->start_ip    = net_off(    _net->ip, _net->nmask );
-    _net->subnet      = calc_subnet( _net->nmask );
-}
-
+// convert an ip address from a dotted string to 4 byte array
 short cnvrt_ip2b( char *ip, uint8_t *dst )
 {
     register int i, j;
@@ -108,6 +94,7 @@ short cnvrt_ip2b( char *ip, uint8_t *dst )
     return 0;
 }
 
+// convert an ip address from 4 byte array to a dotted string representation
 char * cnvrt_ipb2str( uint8_t *ip )
 {
     char *_ip = (char *) malloc( 25 );
@@ -115,6 +102,7 @@ char * cnvrt_ipb2str( uint8_t *ip )
     return _ip;
 }
 
+// convert a hardware address from a colon separated string to 6 byte array
 short cnvrt_hw2b( char *hw, uint8_t *dst )
 {
     int scan;

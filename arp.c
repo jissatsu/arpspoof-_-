@@ -1,10 +1,12 @@
 #include "arp.h"
 
 void arp_inject( libnet_t *ltag, uint16_t opcode, 
-                  uint8_t *src_hw, uint8_t *src_ip,
-                  uint8_t *dst_hw, uint8_t *dst_ip ) 
+                 uint8_t *src_hw, uint8_t *src_ip,
+                 uint8_t *dst_hw, uint8_t *dst_ip ) 
 {
     libnet_ptag_t ether, arp;
+    char *frmt_src = NULL;
+    char *frmt_dst = NULL;
 
     // arp header
     arp = libnet_autobuild_arp(
@@ -29,24 +31,61 @@ void arp_inject( libnet_t *ltag, uint16_t opcode,
         __die( libnet_geterror( ltag ) );
     }
 
+    frmt_dst = cnvrt_ipb2str( dst_ip );
+    frmt_src = cnvrt_ipb2str( src_ip );
+
     if ( opcode == ARPOP_REQUEST ){
-        printf( 
-            "\r%s[?]%s Who has %d.%d.%d.%d? Tell %d.%d.%d.%d ", 
-            GRN, NLL,
-            dst_ip[0], dst_ip[1], dst_ip[2], dst_ip[3], 
-            src_ip[0], src_ip[1], src_ip[2], src_ip[3]
-        );
-    } else {
-        printf( "%s[+]%s %d.%d.%d.%d is at %02x:%02x:%02x:%02x:%02x:%02x\n", 
-            GRN, NLL,
-            src_ip[0], src_ip[1], src_ip[2], src_ip[3],
-            src_hw[0], src_hw[1], src_hw[2], src_hw[3], src_hw[4], src_hw[5]
+        printf( "\r%s[?]%s Who has %s? Tell %s ", GRN, NLL, frmt_dst, frmt_src );
+    } 
+    else {
+        printf( "%s[+]%s %s is at %02x:%02x:%02x:%02x:%02x:%02x\n", 
+            GRN, NLL, frmt_src,
+            src_hw[0], src_hw[1], src_hw[2], 
+            src_hw[3], src_hw[4], src_hw[5]
         );
     }
     fflush( stdout );
+    free( frmt_src );
+    free( frmt_dst );
     libnet_clear_packet( ltag );
 }
 
+/* refresh the arp cache */
+void arp_refresh( libnet_t *lt, struct net *_net )
+{
+    uint8_t *dst_ip;
+    uint8_t src_ip[4];
+    uint8_t src_hw[6];
+
+    cnvrt_ip2b( _net->ip, src_ip );
+    cnvrt_hw2b( _net->hw, src_hw );
+
+    for ( int i = 1 ; i < _net->hosts_range ; i++ )
+    {
+        dst_ip = long2ip( _net->start_ip + i );
+        // skip gratuitous arp
+        if ( dst_ip[0] == src_ip[0]
+          && dst_ip[1] == src_ip[1]
+          && dst_ip[2] == src_ip[2]
+          && dst_ip[3] == src_ip[3] )
+          {
+              continue;
+        }
+        arp_inject(
+            lt, ARPOP_REQUEST, src_hw, src_ip, (uint8_t *) "\xff\xff\xff\xff\xff\xff", dst_ip
+        );
+        mssleep( 0.2 );
+    }
+    printf( "\n" );
+}
+
+void * arp_receiver( void *conf )
+{
+    struct net *_net = (struct net *) conf;
+    return NULL;
+}
+
+// get all live hosts (on the same interface)
 short lookup_arp( char *iface, struct endpoint *endps )
 {
     FILE *fp;
@@ -75,5 +114,46 @@ short lookup_arp( char *iface, struct endpoint *endps )
         ++live_hosts;
     }
     fseek( fp, 0, SEEK_SET );
+    return 0;
+}
+
+// add a new entry to the arp table
+// we adding an entry because we are generating the arp requests 
+// we are not forcing the kernel to do that by sending for example UDP data
+short arp_add_entry( char *iface, uint8_t *ip, uint8_t *hw )
+{
+    int sock;
+    char *ipp;
+    struct arpreq req;
+    
+    if ( (sock = socket( AF_INET, SOCK_STREAM, 0 )) < 0 ) {
+        sprintf( 
+            arpspoof_errbuf, 
+            "%s\n", strerror( errno ) 
+        );
+        return -1;
+    }
+
+    ipp = cnvrt_ipb2str( ip ); // convert to ip to string
+
+    memset( &req, 0, sizeof( req ) );
+    strcpy( req.arp_dev, iface );
+
+    req.arp_flags = ATF_COM;
+
+    req.arp_ha.sa_family = AF_UNSPEC;
+    memcpy( req.arp_ha.sa_data, hw, 6 );
+
+    struct sockaddr_in *sin = (struct sockaddr_in *) &req.arp_pa;
+    sin->sin_family      = AF_INET;
+    sin->sin_addr.s_addr = htonl( ip2long( ipp ) );
+
+    if ( ioctl( sock, SIOCSARP, &req ) < 0 ) {
+        sprintf(
+            arpspoof_errbuf,
+            "%s\n", strerror( errno )
+        );
+        return -1;
+    }
     return 0;
 }
