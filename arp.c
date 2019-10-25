@@ -86,10 +86,16 @@ void packet_handler( u_char *args, const struct pcap_pkthdr *header,
     struct arpspf_eth_hdr *eth_hdr = (struct arpspf_eth_hdr *) packet;
     struct arpspf_arp_hdr *arp_hdr = (struct arpspf_arp_hdr *) (packet + 14);
 
-    if ( ntohs( eth_hdr->eth_type ) == ETHERTYPE_ARP )
+    uint16_t eth_type;
+    uint16_t opcode;
+
+    eth_type = ntohs( eth_hdr->eth_type );
+    opcode   = ntohs( arp_hdr->opcode );
+
+    if ( eth_type == ETHERTYPE_ARP )
     {
-        if ( ntohs( arp_hdr->opcode ) == ARPOP_REPLY ) {
-            printf( "Is arp reply!\n" );
+        if ( opcode == ARPOP_REPLY ) {
+            arp_add_entry( _net->iface, arp_hdr->src_ip, arp_hdr->src_hw );
         }
     }
 }
