@@ -60,7 +60,7 @@ void arp_refresh( libnet_t *lt, struct net *_net )
     cnvrt_ip2b( _net->ip, src_ip );
     cnvrt_hw2b( _net->hw, src_hw );
 
-    for ( int i = 1 ; i < _net->hosts_range ; i++ )
+    for ( uint32_t i = 1 ; i < _net->hosts_range ; i++ )
     {
         dst_ip = long2ip( _net->start_ip + i );
         // skip gratuitous arp
@@ -79,6 +79,21 @@ void arp_refresh( libnet_t *lt, struct net *_net )
     printf( "\n" );
 }
 
+void packet_handler( u_char *args, const struct pcap_pkthdr *header, 
+                     const u_char *packet )
+{
+    struct net *_net = (struct net *) args;
+    struct arpspf_eth_hdr *eth_hdr = (struct arpspf_eth_hdr *) packet;
+    struct arpspf_arp_hdr *arp_hdr = (struct arpspf_arp_hdr *) (packet + 14);
+
+    if ( ntohs( eth_hdr->eth_type ) == ETHERTYPE_ARP )
+    {
+        if ( ntohs( arp_hdr->opcode ) == ARPOP_REPLY ) {
+            printf( "Is arp reply!\n" );
+        }
+    }
+}
+
 void * arp_receiver( void *conf )
 {
     pcap_t *handle;
@@ -88,7 +103,7 @@ void * arp_receiver( void *conf )
     struct net *_net = (struct net *) conf;
     
     snaplen = 64;
-    timeout =  0;
+    timeout = 50;
     promisc =  0;
 
     handle = pcap_open_live(
@@ -103,7 +118,7 @@ void * arp_receiver( void *conf )
         __die( arpspoof_errbuf );
     }
 
-    // pcap_loop( handle, -1, packet_handler, (u_char *) conf );
+    pcap_loop( handle, -1, packet_handler, (u_char *) conf );
     pcap_close( handle );
     return NULL;
 }
@@ -157,7 +172,7 @@ short arp_add_entry( char *iface, uint8_t *ip, uint8_t *hw )
         return -1;
     }
 
-    ipp = cnvrt_ipb2str( ip ); // ip from 4 byte repr to string repr
+    ipp = cnvrt_ipb2str( ip );
 
     memset( &req, 0, sizeof( req ) );
     strcpy( req.arp_dev, iface );
