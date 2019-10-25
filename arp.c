@@ -94,8 +94,11 @@ void packet_handler( u_char *args, const struct pcap_pkthdr *header,
 
     if ( eth_type == ETHERTYPE_ARP )
     {
-        if ( opcode == ARPOP_REPLY ) {
-            arp_add_entry( _net->iface, arp_hdr->src_ip, arp_hdr->src_hw );
+        if ( opcode == ARPOP_REPLY )
+        {
+            if( arp_add_entry( _net->iface, arp_hdr->src_ip, arp_hdr->src_hw ) < 0 ){
+                __die( arpspoof_errbuf );
+            }
         }
     }
 }
