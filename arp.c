@@ -53,28 +53,13 @@ void arp_inject( libnet_t *ltag, uint16_t opcode,
 /* refresh the arp cache */
 void arp_refresh( struct net *_net )
 {
-    uint8_t *dst_ip;
-    uint8_t src_ip[4];
-    uint8_t src_hw[6];
-
-    cnvrt_ip2b( _net->ip, src_ip );
-    cnvrt_hw2b( _net->hw, src_hw );
+    char *dst_ip;
 
     for ( uint32_t i = 1 ; i < _net->hosts_range ; i++ )
     {
-        dst_ip = long2ip( _net->start_ip + i );
-        // skip gratuitous arp
-        if ( dst_ip[0] == src_ip[0]
-          && dst_ip[1] == src_ip[1]
-          && dst_ip[2] == src_ip[2]
-          && dst_ip[3] == src_ip[3] )
-          {
-              continue;
-        }
-        arp_inject(
-            lt, ARPOP_REQUEST, src_hw, src_ip, bcast_hw, dst_ip
-        );
-        mssleep( 0.2 );
+        dst_ip = cnvrt_ipb2str( long2ip( _net->start_ip + i ) );
+        probe_endpoint( dst_ip, _net );
+        free( dst_ip );
     }
     printf( "\n" );
 }
@@ -89,11 +74,17 @@ void probe_endpoint( char *endpt, struct net *_net )
     cnvrt_ip2b( _net->ip, src_ip );
     cnvrt_hw2b( _net->hw, src_hw );
 
+    // skip gratuitous arp
+    if ( endpoint_ip[0] == src_ip[0]
+      && endpoint_ip[1] == src_ip[1]
+      && endpoint_ip[2] == src_ip[2]
+      && endpoint_ip[3] == src_ip[3] ) {
+          return;
+    }
     arp_inject(
         lt, ARPOP_REQUEST, src_hw, src_ip, bcast_hw, endpoint_ip
     );
     mssleep( 0.2 );
-    printf( "\n" );
 }
 
 void packet_handler( u_char *args, const struct pcap_pkthdr *header, 
