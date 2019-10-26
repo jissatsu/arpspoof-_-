@@ -57,14 +57,40 @@ short arp_receiver_start( struct net *_net )
         return -1;
     }
     printf( "%s[+]%s Arp receiver spawned successfully!\n", GRN, NLL );
+    mssleep( 0.5 );
     return 0;
+}
+
+void rescan_input( char *target, struct endpoint *_entps )
+{
+    while ( !match_target( target, _entps ) ) {
+        printf( "%s[!]%s Target not in list!\n\n", RED, NLL );
+        printf( "%s[-]%s Choose a target to poison: ", GRN, NLL );
+        scanf( "%s", target );
+    }
 }
 
 void list_targets( struct endpoint *_entps )
 {
-    for ( register int i = 0 ; i < live_hosts ; i++ ) {
+    printf( "\n%s[+]%s Listing targets...\n", GRN, NLL );
+    for ( register int i = 0 ; i < live_hosts ; i++ ){
         printf( "%s[-]%s %s\n", GRN, NLL, (_entps++)->host_ip );
     }
+}
+
+int8_t match_target( char *target, struct endpoint *_entps )
+{
+    int8_t match = 0;
+
+    if ( live_hosts <= 0 ){
+        return match;
+    }
+    for ( register int i = 0 ; i < live_hosts ; i++ ) {
+        if ( strcmp( target, (_entps++)->host_ip ) == 0 ) {
+            match = 1;
+        }
+    }
+    return match;
 }
 
 void arpspoof( struct net *_net, struct spoof_endpoints *_spf )
@@ -88,16 +114,18 @@ void arpspoof( struct net *_net, struct spoof_endpoints *_spf )
         if ( lookup_arp( _net->iface, _endps ) < 0 ) {
             __die( arpspoof_errbuf );
         }
-        printf( "%s[+]%s Listing targets...\n\n", GRN, NLL );
         list_targets( _endps );
-
-        printf( "Choose a target to poison: " );
+        
+        printf( "%s[-]%s Choose a target to poison: ", GRN, NLL );
         scanf( "%s", target );
-    } 
+
+        if ( !match_target( target, _endps ) ) {
+            rescan_input( target, _endps );
+        }
+    }
     else {
         strcpy( target, _spf->target );
     }
-
     printf( "%s\n", target );
 
     // SIGTSTP

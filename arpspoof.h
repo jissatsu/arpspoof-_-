@@ -15,4 +15,6 @@ short  arp_receiver_start( struct net *_net );
 void   list_targets( struct endpoint *_entps );
 void   arpspoof( struct net *_net, struct spoof_endpoints *_spf );
 
+int8_t match_target( char *target, struct endpoint *_entps );
+
 #endif
