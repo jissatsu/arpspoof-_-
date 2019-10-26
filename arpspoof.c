@@ -89,6 +89,7 @@ int8_t match_target( char *target, struct endpoint *_entps )
         if ( strcmp( target, _entps->host_ip ) == 0 ) {
             match = 1;
         }
+        _entps++;
     }
     return match;
 }
