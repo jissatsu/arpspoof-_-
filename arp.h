@@ -50,8 +50,9 @@ struct endpoint
 };
 
 void * arp_receiver( void *conf );
-void   arp_refresh( libnet_t *lt, struct net *_net );
+void   arp_refresh( struct net *_net );
 void   arp_inject( libnet_t *ltag, uint16_t opcode, uint8_t *src_hw, uint8_t *src_ip, uint8_t *dst_hw, uint8_t *dst_ip );
+void   probe_endpoint( char *endpt, struct net *_net );
 void   packet_handler( u_char *args, const struct pcap_pkthdr *header, const u_char *packet );
 
 short arp_add_entry( char *iface, uint8_t *ip, uint8_t *hw );

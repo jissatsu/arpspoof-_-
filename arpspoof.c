@@ -95,11 +95,8 @@ int8_t match_target( char *target, struct endpoint *_entps )
 
 void arpspoof( struct net *_net, struct spoof_endpoints *_spf )
 {
-    int refresh_stat;
     char target[25];
     struct endpoint _endps[_net->hosts_range];
-        
-    refresh_stat = 0;
 
     if ( arp_receiver_start( _net ) < 0 ) {
         __die( arpspoof_errbuf );
@@ -109,7 +106,7 @@ void arpspoof( struct net *_net, struct spoof_endpoints *_spf )
         printf( "\n" );
         printf( "%s[!]%s Target not specified!\n", RED, NLL );
         printf( "%s[+]%s Refreshig arp table...\n",  GRN, NLL );
-        arp_refresh( lt, _net );
+        arp_refresh( _net );
 
         if ( lookup_arp( _net->iface, _endps ) < 0 ) {
             __die( arpspoof_errbuf );
@@ -125,6 +122,11 @@ void arpspoof( struct net *_net, struct spoof_endpoints *_spf )
     }
     else {
         strcpy( target, _spf->target );
+        printf( "\n%s[+]%s Probing target...\n", GRN, NLL );
+        probe_endpoint( _spf->target, _net );
+
+        printf( "\n%s[+]%s Probing host...\n", GRN, NLL );
+        probe_endpoint( _spf->host, _net );
     }
     printf( "%s\n", target );
 

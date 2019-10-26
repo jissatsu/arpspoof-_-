@@ -51,7 +51,7 @@ void arp_inject( libnet_t *ltag, uint16_t opcode,
 }
 
 /* refresh the arp cache */
-void arp_refresh( libnet_t *lt, struct net *_net )
+void arp_refresh( struct net *_net )
 {
     uint8_t *dst_ip;
     uint8_t src_ip[4];
@@ -76,6 +76,23 @@ void arp_refresh( libnet_t *lt, struct net *_net )
         );
         mssleep( 0.2 );
     }
+    printf( "\n" );
+}
+
+void probe_endpoint( char *endpt, struct net *_net )
+{   
+    uint8_t endpoint_ip[4];
+    uint8_t src_ip[4];
+    uint8_t src_hw[6];
+
+    cnvrt_ip2b( endpt, endpoint_ip );
+    cnvrt_ip2b( _net->ip, src_ip );
+    cnvrt_hw2b( _net->hw, src_hw );
+
+    arp_inject(
+        lt, ARPOP_REQUEST, src_hw, src_ip, (uint8_t *) "\xff\xff\xff\xff\xff\xff", endpoint_ip
+    );
+    mssleep( 0.2 );
     printf( "\n" );
 }
 
