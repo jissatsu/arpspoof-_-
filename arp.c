@@ -183,12 +183,11 @@ short lookup_arp( char *iface, struct endpoint *endps )
 
 short endpoint_hw( char *ip, uint8_t *hw, struct endpoint *endps )
 {
-    char ep_hw[25];
     if ( live_hosts <= 0 ) {
         return -1;
     }
     for ( register uint32_t i = 0 ; i < live_hosts ; i++ ) {
-        if ( strcmp( ip, endps->host_ip ) == 0 ) {
+        if ( strncmp( ip, endps->host_ip, strlen( endps->host_ip ) - 1 ) == 0 ) {
             cnvrt_hw2b( endps->host_hw, hw );
             return 0;
         }

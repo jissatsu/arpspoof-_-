@@ -86,7 +86,7 @@ int8_t match_target( char *target, struct endpoint *_entps )
         return match;
     }
     for ( register uint32_t i = 0 ; i < live_hosts ; i++ ) {
-        if ( strcmp( target, (_entps++)->host_ip ) == 0 ) {
+        if ( strcmp( target, _entps->host_ip ) == 0 ) {
             match = 1;
         }
     }
@@ -102,23 +102,12 @@ void arpspoof( struct net *_net, struct spoof_endpoints *_spf )
         __die( arpspoof_errbuf );
     }
 
+    // THIS CODE HERE IS VERY UGLY :puke: (but at least it works)
     if ( !_spf->target ){
         printf( "\n" );
         printf( "%s[!]%s Target not specified!\n", RED, NLL );
         printf( "%s[+]%s Refreshig arp table...\n",  GRN, NLL );
         arp_refresh( _net );
-
-        if ( lookup_arp( _net->iface, _endps ) < 0 ) {
-            __die( arpspoof_errbuf );
-        }
-        list_targets( _endps );
-        
-        printf( "%s[-]%s Choose a target to poison: ", GRN, NLL );
-        scanf( "%s", target );
-
-        if ( !match_target( target, _endps ) ) {
-            rescan_input( target, _endps );
-        }
     }
     else {
         strcpy( target, _spf->target );
@@ -129,6 +118,31 @@ void arpspoof( struct net *_net, struct spoof_endpoints *_spf )
         probe_endpoint( _spf->host, _net );
     }
 
-    printf( "%s\n", target );
-    printf( "%s\n", _spf->host );
+    if ( lookup_arp( _net->iface, _endps ) < 0 ) {
+        __die( arpspoof_errbuf );
+    }
+
+    if ( !_spf->target ) {
+        list_targets( _endps );
+        printf( "%s[-]%s Choose a target to poison: ", GRN, NLL );
+        scanf( "%s", target );
+
+        if ( !match_target( target, _endps ) ) {
+            rescan_input( target, _endps );
+        }
+    }
+
+    endpoint_hw( target, _spf->target_hw, _endps );
+    printf( 
+        "%02x:%02x:%02x:%02x:%02x:%02x\n",
+        _spf->target_hw[0], _spf->target_hw[1], _spf->target_hw[2], 
+        _spf->target_hw[3], _spf->target_hw[4], _spf->target_hw[5]
+    );
+
+    endpoint_hw( _spf->host, _spf->host_hw, _endps );
+    printf( 
+        "%02x:%02x:%02x:%02x:%02x:%02x\n",
+        _spf->host_hw[0], _spf->host_hw[1], _spf->host_hw[2], 
+        _spf->host_hw[3], _spf->host_hw[4], _spf->host_hw[5]
+    );
 }
