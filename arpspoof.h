@@ -7,7 +7,9 @@
 struct spoof_endpoints
 {
     char *target;
+    uint8_t target_hw[6];
     char *host;
+    uint8_t host_hw[6];
 };
 
 short  __init_arpspoof__( char *iface, struct net *_net );

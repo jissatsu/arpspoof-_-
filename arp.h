@@ -60,5 +60,6 @@ void   packet_handler( u_char *args, const struct pcap_pkthdr *header, const u_c
 
 short arp_add_entry( char *iface, uint8_t *ip, uint8_t *hw );
 short lookup_arp( char *iface, struct endpoint *endps );
+short endpoint_hw( char *ip, uint8_t *hw, struct endpoint *endps );
 
 #endif

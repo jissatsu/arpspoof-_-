@@ -73,7 +73,7 @@ void rescan_input( char *target, struct endpoint *_entps )
 void list_targets( struct endpoint *_entps )
 {
     printf( "\n%s[+]%s Listing targets...\n", GRN, NLL );
-    for ( register int i = 0 ; i < live_hosts ; i++ ){
+    for ( register uint32_t i = 0 ; i < live_hosts ; i++ ){
         printf( "%s[-]%s %s\n", GRN, NLL, (_entps++)->host_ip );
     }
 }
@@ -85,7 +85,7 @@ int8_t match_target( char *target, struct endpoint *_entps )
     if ( live_hosts <= 0 ){
         return match;
     }
-    for ( register int i = 0 ; i < live_hosts ; i++ ) {
+    for ( register uint32_t i = 0 ; i < live_hosts ; i++ ) {
         if ( strcmp( target, (_entps++)->host_ip ) == 0 ) {
             match = 1;
         }
@@ -128,9 +128,7 @@ void arpspoof( struct net *_net, struct spoof_endpoints *_spf )
         printf( "\n%s[+]%s Probing host...\n", GRN, NLL );
         probe_endpoint( _spf->host, _net );
     }
-    printf( "%s\n", target );
 
-    // SIGTSTP
-    // SIGINT
-    // SIGTERM
+    printf( "%s\n", target );
+    printf( "%s\n", _spf->host );
 }
