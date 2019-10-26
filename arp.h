@@ -23,6 +23,9 @@ libnet_t *lt;
 // number of live hosts on the network
 uint16_t live_hosts;
 
+// broadcast destination hardware addr
+static uint8_t bcast_hw[] = "\xff\xff\xff\xff\xff\xff";
+
 struct arpspf_eth_hdr
 {
     uint8_t dst_hw[6];

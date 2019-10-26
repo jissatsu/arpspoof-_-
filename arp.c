@@ -72,7 +72,7 @@ void arp_refresh( struct net *_net )
               continue;
         }
         arp_inject(
-            lt, ARPOP_REQUEST, src_hw, src_ip, (uint8_t *) "\xff\xff\xff\xff\xff\xff", dst_ip
+            lt, ARPOP_REQUEST, src_hw, src_ip, bcast_hw, dst_ip
         );
         mssleep( 0.2 );
     }
@@ -90,7 +90,7 @@ void probe_endpoint( char *endpt, struct net *_net )
     cnvrt_hw2b( _net->hw, src_hw );
 
     arp_inject(
-        lt, ARPOP_REQUEST, src_hw, src_ip, (uint8_t *) "\xff\xff\xff\xff\xff\xff", endpoint_ip
+        lt, ARPOP_REQUEST, src_hw, src_ip, bcast_hw, endpoint_ip
     );
     mssleep( 0.2 );
     printf( "\n" );
