@@ -61,7 +61,7 @@ void arp_inject( libnet_t *ltag, uint16_t opcode,
     libnet_clear_packet( ltag );
 }
 
-/* refresh the arp cache */
+// refresh the arp cache
 void arp_refresh( struct net *_net )
 {
     int s;
@@ -83,6 +83,7 @@ void arp_refresh( struct net *_net )
             long2ip( _net->start_ip + i )
         );
         
+        // skip own address
         if ( strcmp( dst_ip, _net->ip ) == 0 ) {
             continue;
         }
@@ -136,14 +137,20 @@ void packet_handler( u_char *args, const struct pcap_pkthdr *header,
 
     uint16_t eth_type;
     uint16_t opcode;
+    uint8_t  dst_hw[6];
 
     eth_type = ntohs( eth_hdr->eth_type );
     opcode   = ntohs( arp_hdr->opcode );
+    cnvrt_hw2b( _net->hw, dst_hw );
 
-    if ( eth_type == ETHERTYPE_ARP )
+    if ( eth_type == ETHERTYPE_ARP && opcode == ARPOP_REPLY )
     {
-        if ( opcode == ARPOP_REPLY )
-        {
+        // reply is for us?
+        if ( arp_hdr->dst_hw[0] == dst_hw[0]
+          && arp_hdr->dst_hw[1] == dst_hw[1]
+          && arp_hdr->dst_hw[2] == dst_hw[2]
+          && arp_hdr->dst_hw[3] == dst_hw[3] )
+            {
             if( arp_add_entry( _net->iface, arp_hdr->src_ip, arp_hdr->src_hw ) < 0 ){
                 __die( arpspoof_errbuf );
             }
@@ -216,24 +223,9 @@ short lookup_arp( char *iface, struct endpoint *endps )
     return 0;
 }
 
-short endpoint_hw( char *ip, uint8_t *hw, struct endpoint *endps )
-{
-    if ( live_hosts <= 0 ) {
-        return -1;
-    }
-    for ( register uint32_t i = 0 ; i < live_hosts ; i++ ) {
-        if ( strcmp( ip, endps->host_ip ) == 0 ) {
-            cnvrt_hw2b( endps->host_hw, hw );
-            return 0;
-        }
-        endps++;
-    }
-    return -1;
-}
-
 // add a new entry to the arp table
 // we need this function in situations where we are not forcing the kernel to generate the
-// arp requests, but instead we are doing it ourselves
+// arp requests, but instead we are doing it ourselves -> probe_endpoint()
 short arp_add_entry( char *iface, uint8_t *ip, uint8_t *hw )
 {
     int sock;

