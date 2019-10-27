@@ -83,10 +83,18 @@ void arp_refresh( struct net *_net )
             long2ip( _net->start_ip + i )
         );
         
+        if ( strcmp( dst_ip, _net->ip ) == 0 ) {
+            continue;
+        }
+        
         dst.sin_addr.s_addr = inet_addr( dst_ip );
         sendto( 
             s, data, strlen( data ), 0, (struct sockaddr *) &dst, sizeof( dst )
         );
+        printf( 
+            "\r%s[UDP]%s - destination [ %s ]", GRN, NLL, dst_ip 
+        );
+        fflush( stdout );
         mssleep( 0.2 );
     }
     printf( "\n" );
@@ -114,7 +122,7 @@ void probe_endpoint( char *endpt, struct net *_net )
         arp_inject(
             lt, ARPOP_REQUEST, src_hw, src_ip, bcast_hw, endpoint_ip
         );
-        mssleep( 0.5 );
+        mssleep( 0.4 );
     }
     printf( "\n" );
 }
