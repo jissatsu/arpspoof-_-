@@ -99,9 +99,8 @@ void arpspoof( struct net *_net, struct spoof_endpoints *_spf )
     char target[25];
     struct endpoint _endps[_net->hosts_range];
 
-    if ( arp_receiver_start( _net ) < 0 ) {
+    if ( arp_receiver_start( _net ) < 0 )
         __die( arpspoof_errbuf );
-    }
 
     // THIS CODE HERE IS VERY UGLY :puke: (but at least it works)
     if ( !_spf->target ){
@@ -134,16 +133,5 @@ void arpspoof( struct net *_net, struct spoof_endpoints *_spf )
     }
 
     endpoint_hw( target, _spf->target_hw, _endps );
-    printf( 
-        "%02x:%02x:%02x:%02x:%02x:%02x\n",
-        _spf->target_hw[0], _spf->target_hw[1], _spf->target_hw[2], 
-        _spf->target_hw[3], _spf->target_hw[4], _spf->target_hw[5]
-    );
-
     endpoint_hw( _spf->host, _spf->host_hw, _endps );
-    printf( 
-        "%02x:%02x:%02x:%02x:%02x:%02x\n",
-        _spf->host_hw[0], _spf->host_hw[1], _spf->host_hw[2], 
-        _spf->host_hw[3], _spf->host_hw[4], _spf->host_hw[5]
-    );
 }

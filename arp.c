@@ -9,20 +9,31 @@ void arp_inject( libnet_t *ltag, uint16_t opcode,
     char *frmt_dst = NULL;
 
     // arp header
-    arp = libnet_autobuild_arp(
+    arp = libnet_build_arp(
+        ARPHRD_ETHER,
+        ETHERTYPE_IP,
+        ETH_ALEN,
+        0x04,
         opcode,
         src_hw,
         src_ip,
         dst_hw,
         dst_ip,
-        ltag
+        NULL,
+        0x00, ltag, 0x00
     );
     if ( arp < 0 ){
         __die( "Arp header error!" );
     }
 
     // ethernet header
-    ether = libnet_autobuild_ethernet( dst_hw, ETHERTYPE_ARP, ltag );
+    ether = libnet_build_ethernet( 
+        dst_hw,
+        src_hw,
+        ETHERTYPE_ARP,
+        NULL,
+        0x00, ltag, 0x00
+    );
     if ( ether < 0 ){
         __die( "Ethernet header error!" );
     }
@@ -53,13 +64,30 @@ void arp_inject( libnet_t *ltag, uint16_t opcode,
 /* refresh the arp cache */
 void arp_refresh( struct net *_net )
 {
+    int s;
+    char *data = "zz";
     char *dst_ip;
+    struct sockaddr_in dst;
 
+    if ( (s = socket( AF_INET, SOCK_DGRAM, 0 )) < 0 ) {
+        __die( "arp_refresh() - Can't create socket!\n" );
+    }
+
+    memset( &dst, 0, sizeof( dst ) );
+    dst.sin_family = AF_INET;
+    dst.sin_port   = htons( 8080 );
+    
     for ( uint32_t i = 1 ; i < _net->hosts_range ; i++ )
     {
-        dst_ip = cnvrt_ipb2str( long2ip( _net->start_ip + i ) );
-        probe_endpoint( dst_ip, _net );
-        free( dst_ip );
+        dst_ip = cnvrt_ipb2str( 
+            long2ip( _net->start_ip + i )
+        );
+        
+        dst.sin_addr.s_addr = inet_addr( dst_ip );
+        sendto( 
+            s, data, strlen( data ), 0, (struct sockaddr *) &dst, sizeof( dst )
+        );
+        mssleep( 0.2 );
     }
     printf( "\n" );
 }
@@ -81,10 +109,14 @@ void probe_endpoint( char *endpt, struct net *_net )
       && endpoint_ip[3] == src_ip[3] ) {
           return;
     }
-    arp_inject(
-        lt, ARPOP_REQUEST, src_hw, src_ip, bcast_hw, endpoint_ip
-    );
-    mssleep( 0.2 );
+
+    for ( int8_t i = 0 ; i < 3 ; i++ ) {
+        arp_inject(
+            lt, ARPOP_REQUEST, src_hw, src_ip, bcast_hw, endpoint_ip
+        );
+        mssleep( 0.5 );
+    }
+    printf( "\n" );
 }
 
 void packet_handler( u_char *args, const struct pcap_pkthdr *header, 
@@ -164,6 +196,10 @@ short lookup_arp( char *iface, struct endpoint *endps )
         if ( strcmp( iface, dev ) != 0 ) {
             continue;
         }
+        // ignore incomplete arp
+        if ( strcmp( hwaddr, "00:00:00:00:00:00" ) == 0 ) {
+            continue;
+        }
         memcpy( endps->host_ip,     addr,   strlen( addr )   + 1 );
         memcpy( (endps++)->host_hw, hwaddr, strlen( hwaddr ) + 1 );
         ++live_hosts;
@@ -188,8 +224,8 @@ short endpoint_hw( char *ip, uint8_t *hw, struct endpoint *endps )
 }
 
 // add a new entry to the arp table
-// we are adding the entry because we are generating the arp requests
-// we are not forcing the kernel to do that
+// we need this function in situations where we are not forcing the kernel to generate the
+// arp requests, but instead we are doing it ourselves
 short arp_add_entry( char *iface, uint8_t *ip, uint8_t *hw )
 {
     int sock;
