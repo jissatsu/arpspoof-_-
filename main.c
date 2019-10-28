@@ -24,7 +24,7 @@ int main( int argc, char **argv )
     while ( (opt = getopt( argc, argv, "t:g:i:m:" )) != -1 )
     {
         switch ( opt ) {
-            case 'i': iface   = optarg; break; 
+            case 'i': iface   = optarg; break;
             case 't': target  = optarg; break;
             case 'g': gateway = optarg; break;
             default:
@@ -36,18 +36,14 @@ int main( int argc, char **argv )
         _usage( argv[0] );
     }
 
-    if( __init_arpspoof__( iface, &_net ) < 0 )
+    if( __arpspoof_setup__( iface, &_net ) < 0 )
         __die( arpspoof_errbuf );
 
     v_out( VINF, "%s", "Arpspoof initialized!\n" );
 
-    if ( !target ) {
-        strcpy( endpoints.target, "0" );
-    } else {
-        strcpy( endpoints.target, target );
-    }
-    
+    strcpy( endpoints.target, (!target) ? "0" : target );
     strcpy( endpoints.gateway, gateway );
+
     arpspoof( &_net, &endpoints );
     exit( 0 );
 }

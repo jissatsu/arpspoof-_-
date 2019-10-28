@@ -13,7 +13,7 @@ struct spf_endpoints
 }
 endpoints;
 
-short  __init_arpspoof__( char *iface, struct net *_net );
+short  __arpspoof_setup__( char *iface, struct net *_net );
 short  arp_receiver_start( struct net *_net );
 void   arpspoof( struct net *_net, struct spf_endpoints *_spf );
 void   __spoof( char *self_hw );

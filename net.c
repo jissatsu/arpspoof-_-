@@ -28,10 +28,9 @@ uint8_t * long2ip( uint32_t _long )
 // calculate the range of the network
 uint32_t calc_hosts( char *ip, char *nmask )
 {
-    uint32_t lip, lmask;
+    uint32_t lmask;
     uint32_t nhosts = 0;
 
-    lip    = ip2long( ip );
     lmask  = ip2long( nmask );
     nhosts = lmask ^ 0xFFFFFFFF;
     return nhosts;
@@ -114,30 +113,15 @@ short cnvrt_hw2b( char *hw, uint8_t *dst )
         &_zhw[0], &_zhw[1], &_zhw[2], &_zhw[3], &_zhw[4], &_zhw[5]
     );
 
-    if ( scan != EOF ) {
-        for ( register int i = 0 ; i < 6 ; i++ ) {
-            _hw[i] = (unsigned char) _zhw[i];
-        }
-        memcpy( dst, _hw, 6 );
-        return 0;
+    if ( scan == EOF ) {
+        return -1;
     }
-    return -1;
+    for ( register int i = 0 ; i < 6 ; i++ ) {
+        _hw[i] = (unsigned char) _zhw[i];
+    }
+    memcpy( dst, _hw, 6 );
+    return 0;
 }
-
-
-/* check if the hardware address has a valid format -> x:x:x:x:x:x */
-short is_hw_format( char *hw )
-{
-    int scan = 0;
-    unsigned int _zhw[6];
-
-    sscanf( 
-        hw, "%x:%x:%x:%x:%x:%x", 
-        &_zhw[0], &_zhw[1], &_zhw[2], &_zhw[3], &_zhw[4], &_zhw[5]
-    );
-    return ( scan != EOF ) ? 0 : -1 ;
-}
-
 
 /* check if ip address has valid format -> d.d.d.d */
 short is_ipv4_format( char *ip )
@@ -148,7 +132,15 @@ short is_ipv4_format( char *ip )
     sscanf(
         ip, "%d.%d.%d.%d", &_zip[0], &_zip[1], &_zip[2], &_zip[3]
     );
-    return ( scan != EOF ) ? 0 : -1 ;
+    if ( scan == EOF ) {
+        return -1;
+    }
+    for ( int i = 0 ; i < 4 ; i++ ) {
+        if ( _zip[i] < 0 || _zip[i] > 255 ) {
+            return -1;
+        }
+    }
+    return 0;
 }
 
 

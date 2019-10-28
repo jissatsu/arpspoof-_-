@@ -1,6 +1,6 @@
 #include "arpspoof.h"
 
-short __init_arpspoof__( char *iface, struct net *_net )
+short __arpspoof_setup__( char *iface, struct net *_net )
 {   
     struct libnet_ether_addr *hw;
     if ( !(lt = libnet_init( LIBNET_LINK, iface, arpspoof_errbuf )) ) {
@@ -108,12 +108,15 @@ void __spoof( char *self_hw )
 void list_endpoints( char *iface )
 {
     struct endpoint *endps = _endps;
-
-    if ( lookup_arp( iface, NULL, NULL ) < 0 )
+    if ( lookup_arp( iface, NULL, NULL ) < 0 ){
         __die( arpspoof_errbuf );
+    }
     
     v_out( VINF, "%s", "Listing endpoints...\n" );
     for ( uint32_t i = 0 ; i < live_hosts ; i++ ){
+        if ( strcmp( endps->host_ip, endpoints.gateway ) == 0 || strcmp( endps->host_ip, _net.ip ) == 0 ) {
+            continue;
+        }
         v_out( VINF, "%s\n", (endps++)->host_ip );
     }
 }
