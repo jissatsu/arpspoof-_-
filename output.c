@@ -2,12 +2,23 @@
 
 void v_out( verr_t err, char *msg )
 {
-    char *color;
-    char *pfx;
+    int tty;
+    char *c1, *c2, *pfx;
+    char msgf[0xFF];
 
-    if ( err == VINF )  color = GRN, pfx = "[+]";
-    if ( err == VWARN ) color = YLL, pfx = "[*]";
-    if ( err == VERR )  color = RED, pfx = "[!]";
+    tty = isatty( 1 );
+    c2  = (tty) ? NLL : "" ;
 
-    printf( "%s%s%s %s\n", color, pfx, NLL, msg );
+    if ( err == VINF )  c1 = (tty) ? GRN : "", pfx = "[+]";
+    if ( err == VWARN ) c1 = (tty) ? YLL : "", pfx = "[*]";
+    if ( err == VERR )  c1 = (tty) ? RED : "", pfx = "[!]";
+
+    sprintf( msgf, "%s%s%s %s", c1, pfx, c2, msg );
+    printf( "%s", msgf );
+}
+
+// print a single character
+void v_ch( char c )
+{
+    printf( "%c", c );
 }

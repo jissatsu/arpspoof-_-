@@ -6,5 +6,6 @@
 #include "color.h"
 
 void v_out( verr_t err, char *msg );
+void v_ch( char c );
 
 #endif
