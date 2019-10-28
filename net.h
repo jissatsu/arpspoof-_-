@@ -21,10 +21,11 @@ struct net
     char nmask[25];        // netmask
     char ip[25];           // ip of device
     char hw[35];           // hardware addr of device
-    short subnet;          // subnet -. /16; /17; /24 etc...
+    short subnet;          // subnet -> /16; /17; /24 etc...
     uint32_t hosts_range;  // network range
     uint32_t start_ip;     // start ip address i.e 192.168.0.1
-};
+}
+_net;
 
 short     calc_subnet( char *nmask );
 uint8_t * long2ip( uint32_t _long );

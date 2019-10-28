@@ -16,7 +16,6 @@ int main( int argc, char **argv )
     char *target;
     char *iface;
     int opt;
-    struct net _net;
 
     gateway = NULL;
     target  = NULL;

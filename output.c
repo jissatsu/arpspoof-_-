@@ -1,5 +1,10 @@
 #include "output.h"
 
+void v_ch( char c )
+{
+    putchar( c );
+}
+
 void v_out( vmsg_t type, char *format, ... )
 {   
     char *c1, *c2, *pfx;

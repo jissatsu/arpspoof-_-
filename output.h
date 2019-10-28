@@ -8,6 +8,7 @@
 
 int tty;
 
+void v_ch( char c );
 void v_out( vmsg_t type, char *format, ... );
 
 #endif

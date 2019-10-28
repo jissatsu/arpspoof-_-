@@ -62,17 +62,19 @@ short arp_receiver_start( struct net *_net )
     return 0;
 }
 
-void arp_clear_arp( void )
+void arp_clear_arp( int signal )
 {
     uint8_t src_hw[6];
     uint8_t dst_hw[6];
     uint8_t src_ip[4];
     uint8_t dst_ip[4];
 
-    cnvrt_ip2b( endpoints.gateway, src_ip );
-    cnvrt_ip2b( endpoints.target,  dst_ip );
+    cnvrt_hw2b( endpoints.gateway_hw, src_hw );
+    cnvrt_hw2b( endpoints.target_hw,  dst_hw );
+    cnvrt_ip2b( endpoints.gateway,    src_ip );
+    cnvrt_ip2b( endpoints.target,     dst_ip );
 
-    v_out( VINF, "%s", "Restoring arp table...\n" );
+    v_out( VINF, "%s", "\nRestoring arp table...\n" );
     for ( char i = 0 ; i < 5 ; i++ ) {
         arp_inject(
             lt, ARPOP_REPLY, src_hw, src_ip, dst_hw, dst_ip
@@ -80,6 +82,7 @@ void arp_clear_arp( void )
         sleep( 1 );
     }
     printf( "\n" );
+    exit( 0 );
 }
 
 void __spoof( char *self_hw )
@@ -126,7 +129,7 @@ void arpspoof( struct net *_net, struct spf_endpoints *_spf )
             arp_refresh( _net );
 
             list_endpoints( _net->iface );
-            v_out( VINF, "%s", "Choose target to spoof...\n" );
+            v_out( VINF, "%s", "Choose target to spoof... " );
             scanf( "%s", _spf->target );
             break;
         
@@ -139,6 +142,7 @@ void arpspoof( struct net *_net, struct spf_endpoints *_spf )
 
             v_out( VINF, "%s", "Probing gateway...\n" );
             probe_endpoint( _spf->gateway, _net );
+            v_ch( '\n' );
             break;
     }
     
@@ -152,7 +156,7 @@ void arpspoof( struct net *_net, struct spf_endpoints *_spf )
         __die( "Target not found!\n" );
     
 
-    // signal( SIGINT,  arp_clear_arp );
-    // signal( SIGTERM, arp_clear_arp );
+    signal( SIGINT,  arp_clear_arp );
+    signal( SIGTERM, arp_clear_arp );
     __spoof( _net->hw );
 }
