@@ -37,7 +37,6 @@ char * cnvrt_ipb2str( uint8_t *ip );
 short  cnvrt_ip2b( char *ip, uint8_t *dst );
 short  cnvrt_hw2b( char *hw, uint8_t *dst );
 short  is_ipv4_format( char *ip );
-short  is_hw_format( char *hw );
 short  dev_addr( char *iface, char *dst, addr_num_t type, char *errbuf );
 
 #endif

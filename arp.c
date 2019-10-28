@@ -1,40 +1,39 @@
 #include "arp.h"
 
-void arp_inject( libnet_t *ltag, uint16_t opcode, 
-                 uint8_t *src_hw, uint8_t *src_ip,
-                 uint8_t *dst_hw, uint8_t *dst_ip ) 
+void arp_inject( libnet_t *ltag, struct arpspf_eth_hdr *eth, 
+                 struct arpspf_arp_hdr *arp ) 
 {
-    libnet_ptag_t ether, arp;
+    libnet_ptag_t _ether, _arp;
     char *frmt_src = NULL;
     char *frmt_dst = NULL;
 
     // arp header
-    arp = libnet_build_arp(
+    _arp = libnet_build_arp(
         ARPHRD_ETHER,
         ETHERTYPE_IP,
         ETH_ALEN,
         0x04,
-        opcode,
-        src_hw,
-        src_ip,
-        dst_hw,
-        dst_ip,
+        arp->opcode,
+        arp->src_hw,
+        arp->src_ip,
+        arp->dst_hw,
+        arp->dst_ip,
         NULL,
         0x00, ltag, 0x00
     );
-    if ( arp < 0 ){
+    if ( _arp < 0 ){
         __die( "Arp header error!" );
     }
 
     // ethernet header
-    ether = libnet_build_ethernet( 
-        dst_hw,
-        src_hw,
+    _ether = libnet_build_ethernet( 
+        eth->dst_hw,
+        eth->src_hw,
         ETHERTYPE_ARP,
         NULL,
         0x00, ltag, 0x00
     );
-    if ( ether < 0 ){
+    if ( _ether < 0 ){
         __die( "Ethernet header error!" );
     }
 
@@ -42,22 +41,55 @@ void arp_inject( libnet_t *ltag, uint16_t opcode,
         __die( libnet_geterror( ltag ) );
     }
 
-    frmt_dst = cnvrt_ipb2str( dst_ip );
-    frmt_src = cnvrt_ipb2str( src_ip );
+    frmt_dst = cnvrt_ipb2str( arp->dst_ip );
+    frmt_src = cnvrt_ipb2str( arp->src_ip );
 
-    if ( opcode == ARPOP_REQUEST ){
+    if ( arp->opcode == ARPOP_REQUEST ){
         v_out( NVVV, "\rWho has %s? Tell %s", frmt_dst, frmt_src );
     } 
     else {
         v_out( VINF, "%s is at %02x:%02x:%02x:%02x:%02x:%02x\n", frmt_src,
-            src_hw[0], src_hw[1], src_hw[2], 
-            src_hw[3], src_hw[4], src_hw[5]
+            arp->src_hw[0], arp->src_hw[1], arp->src_hw[2], 
+            arp->src_hw[3], arp->src_hw[4], arp->src_hw[5]
         );
     }
     fflush( stdout );
     free( frmt_src );
     free( frmt_dst );
     libnet_clear_packet( ltag );
+}
+
+struct arpspf_eth_hdr * build_eth_hdr( char *dst_hw, char *src_hw )
+{
+    static struct arpspf_eth_hdr hdr;
+    if ( !dst_hw ){
+        memcpy( hdr.dst_hw, bcast_hw, 6 );
+    }
+    if ( dst_hw ){
+        cnvrt_hw2b( dst_hw, hdr.dst_hw );
+    }
+    cnvrt_hw2b( src_hw, hdr.src_hw );
+    return &hdr;
+}
+
+struct arpspf_arp_hdr * build_arp_hdr( uint16_t opcode, 
+                                        char *dst_hw,
+                                        char *dst_ip, 
+                                        char *src_hw,
+                                        char *src_ip )
+{
+    static struct arpspf_arp_hdr hdr;
+    if ( !dst_hw ) {
+        memcpy( hdr.dst_hw, bcast_hw, 6 );
+    }
+    if ( dst_hw ){
+        cnvrt_hw2b( dst_hw, hdr.dst_hw );
+    }
+    hdr.opcode = opcode;
+    cnvrt_hw2b( src_hw, hdr.src_hw );
+    cnvrt_ip2b( dst_ip, hdr.dst_ip );
+    cnvrt_ip2b( src_ip, hdr.src_ip );
+    return &hdr;
 }
 
 // refresh the arp cache
@@ -98,25 +130,29 @@ void arp_refresh( struct net *_net )
 
 void probe_endpoint( char *endpt, struct net *_net )
 {   
-    uint8_t endpoint_ip[4];
-    uint8_t src_ip[4];
-    uint8_t src_hw[6];
+    struct arpspf_eth_hdr *eth;
+    struct arpspf_arp_hdr *arp;
 
-    cnvrt_ip2b( endpt, endpoint_ip );
-    cnvrt_ip2b( _net->ip, src_ip );
-    cnvrt_hw2b( _net->hw, src_hw );
+    arp = build_arp_hdr(
+         ARPOP_REQUEST,
+         NULL,
+         endpt,
+        _net->hw,
+        _net->ip
+    );
+
+    eth = build_eth_hdr(
+        NULL, _net->hw
+    );
 
     // skip gratuitous arp
-    if ( endpoint_ip[0] == src_ip[0]
-      && endpoint_ip[1] == src_ip[1]
-      && endpoint_ip[2] == src_ip[2]
-      && endpoint_ip[3] == src_ip[3] ) {
-          return;
+    if ( strcmp( endpt, _net->ip ) == 0 ) {
+        return;
     }
 
     for ( int8_t i = 0 ; i < 3 ; i++ ) {
         arp_inject(
-            lt, ARPOP_REQUEST, src_hw, src_ip, bcast_hw, endpoint_ip
+            lt, eth, arp
         );
         mssleep( 0.4 );
     }
