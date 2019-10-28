@@ -1,6 +1,6 @@
 #include "output.h"
 
-void v_out( verr_t type, char *format, ... )
+void v_out( vmsg_t type, char *format, ... )
 {   
     char *c1, *c2, *pfx;
     char msgf[0xFF];
@@ -10,6 +10,8 @@ void v_out( verr_t type, char *format, ... )
     if ( type == VINF )  c1 = (tty) ? GRN : "", pfx = "[+]";
     if ( type == VWARN ) c1 = (tty) ? YLL : "", pfx = "[*]";
     if ( type == VERR )  c1 = (tty) ? RED : "", pfx = "[!]";
+    // no msg type
+    if ( type == NVVV )  c1 = "", pfx = "";
 
     va_start( list, format );
     vsprintf( msgf, format, list );

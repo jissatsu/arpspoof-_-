@@ -8,6 +8,6 @@
 
 int tty;
 
-void v_out( verr_t type, char *format, ... );
+void v_out( vmsg_t type, char *format, ... );
 
 #endif

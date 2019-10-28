@@ -149,4 +149,8 @@ void arpspoof( struct net *_net, struct spf_endpoints *_spf )
         
     if ( strlen( _spf->target_hw ) <= 0 )
         __die( "Target not found!\n" );
+    
+
+    // signal( SIGINT,  arp_clear_arp );
+    // signal( SIGTERM, arp_clear_arp );
 }

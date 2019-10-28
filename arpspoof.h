@@ -3,7 +3,6 @@
 
 #include <signal.h>
 #include "arp.h"
-#include "output.h"
 
 struct spf_endpoints
 {

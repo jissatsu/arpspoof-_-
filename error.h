@@ -8,6 +8,6 @@ char arpspoof_errbuf[0xFF];
 
 void __die( char *msg );
 
-typedef enum { VERR, VINF, VWARN } verr_t;
+typedef enum { NVVV, VERR, VINF, VWARN } vmsg_t;
 
 #endif

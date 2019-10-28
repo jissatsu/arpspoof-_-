@@ -46,11 +46,10 @@ void arp_inject( libnet_t *ltag, uint16_t opcode,
     frmt_src = cnvrt_ipb2str( src_ip );
 
     if ( opcode == ARPOP_REQUEST ){
-        printf( "\r%s[?]%s Who has %s? Tell %s ", GRN, NLL, frmt_dst, frmt_src );
+        v_out( NVVV, "\rWho has %s? Tell %s", frmt_dst, frmt_src );
     } 
     else {
-        printf( "%s[+]%s %s is at %02x:%02x:%02x:%02x:%02x:%02x\n", 
-            GRN, NLL, frmt_src,
+        v_out( VINF, "%s is at %02x:%02x:%02x:%02x:%02x:%02x\n", frmt_src,
             src_hw[0], src_hw[1], src_hw[2], 
             src_hw[3], src_hw[4], src_hw[5]
         );
