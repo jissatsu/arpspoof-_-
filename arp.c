@@ -92,11 +92,7 @@ void arp_refresh( struct net *_net )
         sendto( 
             s, data, strlen( data ), 0, (struct sockaddr *) &dst, sizeof( dst )
         );
-        printf( 
-            "\r%s[UDP]%s - destination [ %s ]", GRN, NLL, dst_ip 
-        );
-        fflush( stdout );
-        mssleep( 0.2 );
+        mssleep( 0.1 );
     }
     printf( "\n" );
 }
@@ -169,14 +165,7 @@ void * arp_receiver( void *conf )
     snaplen = 64;
     timeout = 50;
     promisc =  0;
-
-    handle = pcap_open_live(
-        _net->iface,
-        snaplen,
-        promisc,
-        timeout,
-        arpspoof_errbuf
-    );
+    handle  = pcap_open_live( _net->iface, snaplen, promisc, timeout, arpspoof_errbuf );
 
     if ( !handle ) {
         __die( arpspoof_errbuf );
@@ -187,8 +176,8 @@ void * arp_receiver( void *conf )
     return NULL;
 }
 
-// get all live hosts (on the same interface)
-short lookup_arp( char *iface, struct endpoint *endps )
+// get all live hosts or a single host (on the same interface)
+short lookup_arp( char *iface, char *ip_addr, char *hw_addr )
 {
     FILE *fp;
     char line[0xFF];
@@ -198,13 +187,18 @@ short lookup_arp( char *iface, struct endpoint *endps )
     char hwaddr[25];
     char mask[5];
     char dev[25];
+    struct endpoint *endps;
 
     if ( !(fp = fopen( ARP_CACHE, "r" )) ){
         sprintf( arpspoof_errbuf, "lookup_arp(): %s", strerror( errno ) );
         return -1;
     }
 
-    live_hosts = 0;
+    if ( !ip_addr && !hw_addr ) {
+        endps = _endps;
+        live_hosts = 0;
+    }
+
     while ( fgets( line, 0xFF, fp ) )
     {
         sscanf( line, "%s %s %s %s %s %s", addr, hwtype, flags, hwaddr, mask, dev );
@@ -215,11 +209,24 @@ short lookup_arp( char *iface, struct endpoint *endps )
         if ( strcmp( hwaddr, "00:00:00:00:00:00" ) == 0 ) {
             continue;
         }
-        memcpy( endps->host_ip,     addr,   strlen( addr )   + 1 );
-        memcpy( (endps++)->host_hw, hwaddr, strlen( hwaddr ) + 1 );
-        ++live_hosts;
+
+        if ( !ip_addr && !hw_addr )
+        {
+            cnvrt_ip2b( addr,   endps->bhost_ip );
+            cnvrt_hw2b( hwaddr, endps->bhost_hw );
+            
+            memcpy( endps->host_ip,     addr,   strlen( addr )   + 1 );
+            memcpy( (endps++)->host_hw, hwaddr, strlen( hwaddr ) + 1 );
+            ++live_hosts;
+        }
+        else {
+            if ( strcmp( ip_addr, addr ) == 0 ) {
+                memcpy( hw_addr, hwaddr, strlen( hwaddr ) + 1 );
+                break;
+            }
+        }
     }
-    fseek( fp, 0, SEEK_SET );
+    fclose( fp );
     return 0;
 }
 

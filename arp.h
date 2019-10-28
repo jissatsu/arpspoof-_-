@@ -11,7 +11,7 @@
 #include <getopt.h>
 #include "net.h"
 #include "sleep.h"
-#include "color.h"
+#include "output.h"
 
 #ifndef ARP_CACHE 
     #define ARP_CACHE "/proc/net/arp"
@@ -50,7 +50,10 @@ struct endpoint
 {
     char host_ip[25];
     char host_hw[25];
-};
+    uint8_t bhost_ip[4];
+    uint8_t bhost_hw[6];
+}
+_endps[65534];
 
 void * arp_receiver( void *conf );
 void   arp_refresh( struct net *_net );
@@ -59,6 +62,6 @@ void   probe_endpoint( char *endpt, struct net *_net );
 void   packet_handler( u_char *args, const struct pcap_pkthdr *header, const u_char *packet );
 
 short arp_add_entry( char *iface, uint8_t *ip, uint8_t *hw );
-short lookup_arp( char *iface, struct endpoint *endps );
+short lookup_arp( char *iface, char *ip_addr, char *hw_addr );
 
 #endif

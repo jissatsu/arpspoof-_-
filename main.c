@@ -40,8 +40,8 @@ int main( int argc, char **argv )
     if( __init_arpspoof__( iface, &_net ) < 0 )
         __die( arpspoof_errbuf );
 
-    printf( "%s[+]%s Arpspoof initialized!\n", GRN, NLL );
-    
+    v_out( VINF, "Arpspoof initialized!" );
+
     if ( !target ) {
         strcpy( endpoints.target, "0" );
     } else {
