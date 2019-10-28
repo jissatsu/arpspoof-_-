@@ -62,15 +62,15 @@ short arp_receiver_start( struct net *_net )
     return 0;
 }
 
-void arp_clear_arp( struct spf_endpoints *_spf )
+void arp_clear_arp( void )
 {
     uint8_t src_hw[6];
     uint8_t dst_hw[6];
     uint8_t src_ip[4];
     uint8_t dst_ip[4];
 
-    cnvrt_ip2b( _spf->gateway, src_ip );
-    cnvrt_ip2b( _spf->target,  dst_ip );
+    cnvrt_ip2b( endpoints.gateway, src_ip );
+    cnvrt_ip2b( endpoints.target,  dst_ip );
 
     v_out( VINF, "%s", "Restoring arp table...\n" );
     for ( char i = 0 ; i < 5 ; i++ ) {
@@ -82,16 +82,17 @@ void arp_clear_arp( struct spf_endpoints *_spf )
     printf( "\n" );
 }
 
-void __spoof( struct spf_endpoints *_spf, struct net *_net )
+void __spoof( char *self_hw )
 {
     uint8_t src_hw[6];
     uint8_t dst_hw[6];
     uint8_t src_ip[4];
     uint8_t dst_ip[4];
 
-    cnvrt_hw2b( _net->hw,      src_hw );
-    cnvrt_ip2b( _spf->gateway, src_ip );
-    cnvrt_ip2b( _spf->target,  dst_ip );
+    cnvrt_hw2b( self_hw,             src_hw );
+    cnvrt_hw2b( endpoints.target_hw, dst_hw );
+    cnvrt_ip2b( endpoints.gateway,   src_ip );
+    cnvrt_ip2b( endpoints.target,    dst_ip );
 
     for ( ;; ) {
         arp_inject(
@@ -153,4 +154,5 @@ void arpspoof( struct net *_net, struct spf_endpoints *_spf )
 
     // signal( SIGINT,  arp_clear_arp );
     // signal( SIGTERM, arp_clear_arp );
+    __spoof( _net->hw );
 }
