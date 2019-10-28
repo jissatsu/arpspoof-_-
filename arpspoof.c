@@ -12,7 +12,8 @@ short __init_arpspoof__( char *iface, struct net *_net )
         sprintf( arpspoof_errbuf, "%s", libnet_geterror( lt ) );
         return -1;
     }
-    
+
+    tty = isatty( 1 );
     sprintf( 
         _net->hw, "%02x:%02x:%02x:%02x:%02x:%02x",
             hw->ether_addr_octet[0],
@@ -56,7 +57,7 @@ short arp_receiver_start( struct net *_net )
         );
         return -1;
     }
-    v_out( VINF, "Arp receiver spawned successfully!\n" );
+    v_out( VINF, "%s", "Arp receiver spawned successfully!\n" );
     mssleep( 0.5 );
     return 0;
 }
@@ -71,7 +72,7 @@ void arp_clear_arp( struct spf_endpoints *_spf )
     cnvrt_ip2b( _spf->gateway, src_ip );
     cnvrt_ip2b( _spf->target,  dst_ip );
 
-    v_out( VINF, "Restoring arp table...\n" );
+    v_out( VINF, "%s", "Restoring arp table...\n" );
     for ( char i = 0 ; i < 5 ; i++ ) {
         arp_inject(
             lt, ARPOP_REPLY, src_hw, src_ip, dst_hw, dst_ip
@@ -107,10 +108,9 @@ void list_endpoints( char *iface )
     if ( lookup_arp( iface, NULL, NULL ) < 0 )
         __die( arpspoof_errbuf );
     
-    v_out( VINF, "Listing endpoints...\n" );
+    v_out( VINF, "%s", "Listing endpoints...\n" );
     for ( uint32_t i = 0 ; i < live_hosts ; i++ ){
-        v_out( VINF, (endps++)->host_ip );
-        v_ch( '\n' );
+        v_out( VINF, "%s\n", (endps++)->host_ip );
     }
 }
 
@@ -120,12 +120,12 @@ void arpspoof( struct net *_net, struct spf_endpoints *_spf )
     t = strcmp( _spf->target, "0" );
     switch ( t ) {
         case 0:
-            v_out( VWARN, "Target not specified!\n" );
-            v_out( VINF, "Refreshing arp table...\n" );
+            v_out( VWARN, "%s", "Target not specified!\n" );
+            v_out( VINF, "%s", "Refreshing arp table...\n" );
             arp_refresh( _net );
 
             list_endpoints( _net->iface );
-            v_out( VINF, "Choose target to spoof...\n" );
+            v_out( VINF, "%s", "Choose target to spoof...\n" );
             scanf( "%s", _spf->target );
             break;
         
@@ -133,10 +133,10 @@ void arpspoof( struct net *_net, struct spf_endpoints *_spf )
             if ( arp_receiver_start( _net ) < 0 )
                 __die( arpspoof_errbuf );
             
-            v_out( VINF, "Probing target...\n" );
+            v_out( VINF, "%s", "Probing target...\n" );
             probe_endpoint( _spf->target, _net );
 
-            v_out( VINF, "Probing gateway...\n" );
+            v_out( VINF, "%s", "Probing gateway...\n" );
             probe_endpoint( _spf->gateway, _net );
             break;
     }

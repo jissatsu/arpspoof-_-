@@ -1,24 +1,17 @@
 #include "output.h"
 
-void v_out( verr_t err, char *msg )
-{
-    int tty;
+void v_out( verr_t type, char *format, ... )
+{   
     char *c1, *c2, *pfx;
     char msgf[0xFF];
-
-    tty = isatty( 1 );
+    va_list list;
+    
     c2  = (tty) ? NLL : "" ;
+    if ( type == VINF )  c1 = (tty) ? GRN : "", pfx = "[+]";
+    if ( type == VWARN ) c1 = (tty) ? YLL : "", pfx = "[*]";
+    if ( type == VERR )  c1 = (tty) ? RED : "", pfx = "[!]";
 
-    if ( err == VINF )  c1 = (tty) ? GRN : "", pfx = "[+]";
-    if ( err == VWARN ) c1 = (tty) ? YLL : "", pfx = "[*]";
-    if ( err == VERR )  c1 = (tty) ? RED : "", pfx = "[!]";
-
-    sprintf( msgf, "%s%s%s %s", c1, pfx, c2, msg );
-    printf( "%s", msgf );
-}
-
-// print a single character
-void v_ch( char c )
-{
-    printf( "%c", c );
+    va_start( list, format );
+    vsprintf( msgf, format, list );
+    printf( "%s%s%s %s", c1, pfx, c2, msgf );
 }

@@ -40,7 +40,7 @@ int main( int argc, char **argv )
     if( __init_arpspoof__( iface, &_net ) < 0 )
         __die( arpspoof_errbuf );
 
-    v_out( VINF, "Arpspoof initialized!\n" );
+    v_out( VINF, "%s", "Arpspoof initialized!\n" );
 
     if ( !target ) {
         strcpy( endpoints.target, "0" );
