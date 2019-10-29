@@ -301,7 +301,9 @@ short arp_add_entry( char *iface, uint8_t *ip, uint8_t *hw )
             arpspoof_errbuf,
             "%s\n", strerror( errno )
         );
+        close( sock );
         return -1;
     }
+    close( sock );
     return 0;
 }
