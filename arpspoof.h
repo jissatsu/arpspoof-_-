@@ -16,7 +16,7 @@ endpoints;
 short  __arpspoof_setup__( char *iface, struct net *_net );
 short  arp_receiver_start( struct net *_net );
 void   arpspoof( struct net *_net, struct spf_endpoints *_spf );
-void   __spoof( char *self_hw );
+void   __spoof( void );
 void   arp_clear_arp( int signal );
 void   set_endpoints( char *iface, struct spf_endpoints *_spf );
 void   list_endpoints( char *iface );

@@ -86,8 +86,8 @@ struct arpspf_arp_hdr * build_arp_hdr( uint16_t opcode,
         cnvrt_hw2b( dst_hw, hdr.dst_hw );
     }
     hdr.opcode = opcode;
-    cnvrt_hw2b( src_hw, hdr.src_hw );
     cnvrt_ip2b( dst_ip, hdr.dst_ip );
+    cnvrt_hw2b( src_hw, hdr.src_hw );
     cnvrt_ip2b( src_ip, hdr.src_ip );
     return &hdr;
 }

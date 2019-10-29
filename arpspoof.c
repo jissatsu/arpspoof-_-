@@ -80,7 +80,7 @@ void arp_clear_arp( int signal )
     );
 
     v_out( VINF, "%s", "\nRestoring arp table...\n" );
-    for ( char i = 0 ; i < 10 ; i++ ) {
+    for ( int8_t i = 0 ; i < 10 ; i++ ) {
         arp_inject(
             lt, eth, arp
         );
@@ -90,7 +90,7 @@ void arp_clear_arp( int signal )
     exit( 0 );
 }
 
-void __spoof( char *self_hw )
+void __spoof( void )
 {
     struct arpspf_eth_hdr *eth;
     struct arpspf_arp_hdr *arp;
@@ -99,12 +99,12 @@ void __spoof( char *self_hw )
         ARPOP_REPLY,
         endpoints.target_hw,
         endpoints.target,
-        self_hw,
+        _net.hw,
         endpoints.gateway
     );
 
     eth = build_eth_hdr(
-        endpoints.target_hw, self_hw
+        endpoints.target_hw, _net.hw
     );
 
     for ( ;; ) {
@@ -121,11 +121,11 @@ void list_endpoints( char *iface )
     }
     
     v_out( VINF, "%s", "Listing endpoints...\n" );
-    for ( uint32_t i = 0 ; i < live_hosts ; i++ ){
-        if ( strcmp( endps->host_ip, endpoints.gateway ) == 0 || strcmp( endps->host_ip, _net.ip ) == 0 ) {
-            continue;
+    for ( uint16_t i = 0 ; i < live_hosts ; i++ ){
+        if ( strcmp( endps->host_ip, endpoints.gateway ) != 0 && strcmp( endps->host_ip, _net.ip ) != 0 ) {
+            v_out( VINF, "%s\n", endps->host_ip );
         }
-        v_out( VINF, "%s\n", (endps++)->host_ip );
+        endps++;
     }
 }
 
@@ -169,5 +169,5 @@ void arpspoof( struct net *_net, struct spf_endpoints *_spf )
 
     signal( SIGINT,  arp_clear_arp );
     signal( SIGTERM, arp_clear_arp );
-    __spoof( _net->hw );
+    __spoof();
 }
