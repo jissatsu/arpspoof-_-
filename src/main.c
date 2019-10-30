@@ -2,11 +2,12 @@
 
 void _usage( char *prog )
 {
-    fprintf( stdout, "Usage: %s", prog );
-    fprintf( stdout, "-i [INTERFACE NAME]" );
-    fprintf( stdout, "-t [TARGET IP]" );
-    fprintf( stdout, "-m [TARGET MAC" );
-    fprintf( stdout, "-g [GATEWAY IP]" );
+    fprintf( stdout, "Usage: %s [OPTIONS]\n", prog );
+    fprintf( stdout, "-h [SHOW HELP]\n" );
+    fprintf( stdout, "-i [INTERFACE NAME]\n" );
+    fprintf( stdout, "-t [TARGET IP]\n" );
+    fprintf( stdout, "-m [TARGET MAC\n" );
+    fprintf( stdout, "-g [GATEWAY IP]\n" );
     exit( 2 );
 }
 
@@ -21,12 +22,13 @@ int main( int argc, char **argv )
     target  = NULL;
     iface   = NULL;
 
-    while ( (opt = getopt( argc, argv, "t:g:i:m:" )) != -1 )
+    while ( (opt = getopt( argc, argv, "t:g:i:m:h" )) != -1 )
     {
         switch ( opt ) {
             case 'i': iface   = optarg; break;
             case 't': target  = optarg; break;
             case 'g': gateway = optarg; break;
+			case 'h': _usage( argv[0] );
             default:
                 _usage( argv[0] );
         }

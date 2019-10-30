@@ -7,11 +7,8 @@ uint32_t ip2long( char *ip )
     uint32_t _long = 0;
 
     cnvrt_ip2b( ip, cnvrt );
-    _long += (uint32_t) (cnvrt[0] << 24);
-    _long += (uint32_t) (cnvrt[1] << 16);
-    _long += (uint32_t) (cnvrt[2] << 8);
-    _long += (uint32_t) (cnvrt[3] << 0);
-    return _long;
+    _long = (cnvrt[0] << 24) | (cnvrt[1] << 16) | (cnvrt[2] << 8) | (cnvrt[3] << 0);
+	return _long;
 }
 
 // convert an ip address from long to 4 byte array
