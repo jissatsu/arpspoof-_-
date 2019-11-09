@@ -6,7 +6,6 @@ void _usage( char *prog )
     fprintf( stdout, "-h [SHOW HELP]\n" );
     fprintf( stdout, "-i [INTERFACE NAME]\n" );
     fprintf( stdout, "-t [TARGET IP]\n" );
-    fprintf( stdout, "-m [TARGET MAC\n" );
     fprintf( stdout, "-g [GATEWAY IP]\n" );
     exit( 2 );
 }
@@ -22,7 +21,7 @@ int main( int argc, char **argv )
     target  = NULL;
     iface   = NULL;
 
-    while ( (opt = getopt( argc, argv, "t:g:i:m:h" )) != -1 )
+    while ( (opt = getopt( argc, argv, "t:g:i:h" )) != -1 )
     {
         switch ( opt ) {
             case 'i': iface   = optarg; break;
