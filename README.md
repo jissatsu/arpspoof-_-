@@ -2,8 +2,8 @@
 
 arpspoofing module
 
-### Tested on Linux mint (x86_64) and Raspberry Pi 3 B+
-### It should work on Ubuntu and Kali too
+### Development platform was Linux mint (x86_64).
+## Tested on Raspberry Pi 3 B+
 
 ## Intro
 * Performs arp spoofing (arp poisoning) against a single host.
