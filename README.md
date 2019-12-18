@@ -2,11 +2,12 @@
 
 arpspoofing module
 
-### Development platform was Linux mint (x86_64).
-## Tested on Raspberry Pi 3 B+
+## Tested on
+* `Raspberry Pi 3 B+`
+* `Linux Mint - amd64`
 
 ## Intro
-* Performs arp spoofing (arp poisoning) against a single host.
+* Performs `arp spoofing` (arp poisoning) against a single host.
 
 ## Usage
 
